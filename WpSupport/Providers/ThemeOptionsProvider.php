@@ -1,0 +1,34 @@
+<?php
+
+namespace Laraish\WpSupport\Providers;
+
+use Laraish\WpSupport\ThemeOptions;
+use Illuminate\Support\ServiceProvider;
+
+class ThemeOptionsProvider extends ServiceProvider
+{
+    /**
+     * Bootstrap any application services.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $options = config('theme');
+        foreach ($options as $method => $option) {
+            if (method_exists(ThemeOptions::class, $method)) {
+                \call_user_func(ThemeOptions::class . "::${method}", $option);
+            }
+        }
+    }
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+}

@@ -1,0 +1,36 @@
+{
+    "name": "laraish/framework",
+    "description": "The Laraish Framework for WordPress.",
+    "keywords": [
+        "framework",
+        "laravel",
+        "wordpress"
+    ],
+    "license": "MIT",
+    "homepage": "http://laravel.com",
+    "support": {
+        "issues": "https://github.com/laravel/framework/issues",
+        "source": "https://github.com/laravel/framework"
+    },
+    "authors": [
+        {
+            "name": "yaquawa",
+            "email": "yaquawa@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.4",
+        "laravel/framework": "5.3.*",
+        "laraish/contracts": "0.1.*",
+        "laraish/support": "0.1.*",
+        "laraish/pagination": "0.1.*"
+    },
+    "autoload": {
+        "files": [
+            "Foundation/helpers.php"
+        ],
+        "psr-4": {
+            "Laraish\\": "./"
+        }
+    }
+}
