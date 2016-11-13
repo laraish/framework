@@ -39,7 +39,7 @@ class BladeDirectivesProvider extends ServiceProvider
             preg_match('/(.*) as (.*)/', $expression, $matches);
             $afterAs = explode('=>', preg_replace('/\s+/', '', $matches[2]));
             $post    = count($afterAs) === 2 ? $afterAs[1] : $afterAs[0];
-            $post .= '->wp_post';
+            $post .= '->wpPost';
             $phpCode = "foreach({$expression}): setup_the_post( $post );";
         }
 

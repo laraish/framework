@@ -5,6 +5,7 @@ namespace Laraish\WpSupport\Query;
 use WP_Query;
 use ArrayObject;
 use Laraish\Pagination\Paginator;
+use Illuminate\Support\Collection;
 use Laraish\Contracts\WpSupport\Query\QueryResults as QueryResultsContracts;
 
 class QueryResults extends ArrayObject implements QueryResultsContracts
@@ -52,5 +53,14 @@ class QueryResults extends ArrayObject implements QueryResultsContracts
     public function wpQuery()
     {
         return $this->wp_query;
+    }
+
+    /**
+     * Convert to Collection object.
+     * @return \Illuminate\Support\Collection
+     */
+    public function toCollection()
+    {
+        return new Collection((array)$this);
     }
 }

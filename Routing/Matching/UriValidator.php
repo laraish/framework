@@ -6,10 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Matching\ValidatorInterface;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Matching\UriValidator as OriginalUriValidator;
+use Illuminate\Support\Collection;
+use Laraish\WpSupport\Model\Post;
+use Laraish\WpSupport\Model\Term;
 
 class UriValidator implements ValidatorInterface
 {
-    private $conditional_fn_map = [
+    private static $conditionalFunctionsMap = [
         /* Generic Types */
         '404'               => 'is_404',
         'search'            => 'is_search',
@@ -46,6 +49,54 @@ class UriValidator implements ValidatorInterface
      */
     private $originalUriValidator;
 
+    /**
+     * The routing hierarchy for the current routing.
+     * @var array
+     */
+    private $routingHierarchy;
+
+    /**
+     * The URI for the current routing.
+     * @var string
+     */
+    private $uri;
+
+    /**
+     * The post-type for the current routing.
+     * @var string
+     */
+    private $pageType;
+
+    /**
+     * The main selector of the current routing.
+     * @var string
+     */
+    private $mainSelector;
+
+    /**
+     * If the current page is a generic page like `home` or `page` etc.
+     * @var bool
+     */
+    private $isGenericPage;
+
+    /**
+     * The current queried object.
+     * @var object|null
+     */
+    private $queriedObject = false;
+
+    /**
+     * Get the conditional function provided by WordPress.
+     * Such as `is_page()` or `is_home()` etc.
+     *
+     * @param string $pageType
+     *
+     * @return null|string
+     */
+    private static function getConditionalFunction($pageType)
+    {
+        return isset(self::$conditionalFunctionsMap[$pageType]) ? '\\' . self::$conditionalFunctionsMap[$pageType] : null;
+    }
 
     /**
      * UriValidator constructor.
@@ -65,120 +116,171 @@ class UriValidator implements ValidatorInterface
      */
     public function matches(Route $route, Request $request)
     {
-        $this->route   = $route;
-        $this->request = $request;
-
-        $uri    = $route->uri();
-        $prefix = $route->getPrefix();
-
-        // Transform the $uri to the form of `prefix.URI-fragment`   e.g. `page.about`
-        if ( ! empty($prefix)) {
-            $uri = str_replace('/', '.', $uri);
-        }
+        $this->refreshState($route, $request);
 
         // if the current page is a generic page
         // then just use the uri to test
-        if ($this->is_generic($uri)) {
-            return $this->is_it_matches($uri);
+        if ($this->isGenericPage) {
+            return $this->is($this->pageType);
         }
 
-        // if the current page is a specified page
-        // extract the post type and post slug
-        $post_info                = explode('.', $uri);
-        $post_type                = $post_info[0];
-        $post_slug                = $post_info[1];
-        $post_info_greater_than_2 = count($post_info) > 2;
-        $post_hierarchy           = array_slice($post_info, 1);
 
-        if ($post_type === 'category' AND \is_category()) {
-            $isSubCategory = $post_info_greater_than_2;
-            if ($isSubCategory) {
-                $cat       = get_category(get_query_var('cat'));
-                $hierarchy = $this->get_category_parents($cat);
-                array_push($hierarchy, urldecode($cat->slug));
+        // These pages are special because they may have a hierarchy.
+        // e.g. `page.foo.bar`
 
-                return $hierarchy == $post_hierarchy;
+        if ($this->pageType === 'category' AND is_category()) {
+            return $this->isSpecificTaxonomyTerm(true) ?: $this->fallback();
+        }
+
+        if ($this->pageType === 'taxonomy' AND is_tax()) {
+            return $this->isSpecificTaxonomyTerm() ?: $this->fallback();
+        }
+
+        if ($this->pageType === 'page' AND is_page()) {
+            return $this->isSpecificPage() ?: $this->fallback();
+        }
+
+
+        return $this->is($this->pageType, $this->mainSelector);
+    }
+
+    /**
+     * Reset the properties that need to be updated.
+     *
+     * @param Route $route
+     * @param Request $request
+     */
+    private function refreshState(Route $route, Request $request)
+    {
+        $this->route   = $route;
+        $this->request = $request;
+        $this->uri     = $route->uri();
+
+        // Transform the $uri to the form of `prefix.URI-fragment`   e.g. `page.about`
+        if ( ! empty($route->getPrefix())) {
+            $this->uri = str_replace('/', '.', $this->uri);
+        }
+
+        $uriComponents = explode('.', $this->uri); // e.g.  `page.foo.bar` =>  ['page', 'foo', 'bar']
+
+        if (count($uriComponents) === 1) {
+            // the current page is a generic page
+            $this->isGenericPage    = true;
+            $this->pageType         = $uriComponents[0]; // e.g.  `page` `home`
+            $this->mainSelector     = null;
+            $this->routingHierarchy = null;
+        } else {
+            // the current page is a specified page
+            $this->isGenericPage    = false;
+            $this->pageType         = $uriComponents[0]; // e.g.  `{page}.foo.bar`
+            $this->mainSelector     = $uriComponents[1]; // e.g.  `page.{foo}.bar`
+            $this->routingHierarchy = array_slice($uriComponents, 1); // e.g.  `page.{foo.bar}`
+        }
+
+        // get and set the queried object only once
+        if ($this->queriedObject === false) {
+            $this->queriedObject = get_queried_object();
+        }
+    }
+
+    /**
+     * Check if the current page is matching to the routing page.
+     * @return bool
+     */
+    private function isSpecificPage()
+    {
+        static $currentHierarchy;
+
+        if ( ! isset($currentHierarchy)) {
+            $currentPost      = new Post(get_post());
+            $currentHierarchy = $currentPost->ancestors()->map(function (Post $post) {
+                return urldecode($post->wpPost()->post_name);
+            })->push(urldecode($currentPost->wpPost()->post_name));
+        }
+
+        return $this->isSelfOrDescendant($currentHierarchy);
+    }
+
+    /**
+     * Check if the current page is matching to the routing page.
+     *
+     * @param bool $isCategory
+     *
+     * @return bool
+     */
+    private function isSpecificTaxonomyTerm($isCategory = false)
+    {
+        static $currentHierarchy;
+
+        $queriedObject = $this->queriedObject;
+        if ( ! $queriedObject instanceof \WP_Term) {
+            return $this->fallback();
+        }
+
+        if ( ! isset($currentHierarchy)) {
+            $currentTerm     = new Term($queriedObject);
+            $currentTaxonomy = urldecode($currentTerm->wpTerm()->taxonomy);
+
+            $currentHierarchy = $currentTerm->ancestors()->push($currentTerm)->map(function (Term $term) {
+                return urldecode($term->slug());
+            });
+
+            if ( ! $isCategory) {
+                $currentHierarchy->prepend($currentTaxonomy);
             }
         }
 
-        if ($post_type === 'taxonomy' AND \is_tax()) {
-            $isSubTerm = $post_info_greater_than_2;
-            if ($isSubTerm) {
-                $taxonomy  = get_query_var('taxonomy');
-                $term      = get_term_by('slug', get_query_var('term'), $taxonomy);
-                $hierarchy = $this->get_taxonomy_parents($term, $post_slug);
-                array_unshift($hierarchy, $taxonomy);
-                array_push($hierarchy, urldecode($term->slug));
-
-                return $hierarchy == $post_hierarchy;
-            }
-
-            return \is_tax($post_slug);
-        }
-
-        if ($post_type === 'page' AND \is_page()) {
-            // if sub-page is supplied, detect if the current page matches
-            $isSubPage = count($post_info) > 2;
-            if ($isSubPage) {
-                $currentPost = \get_post(\get_the_ID());
-                $hierarchy   = $this->get_page_parents($currentPost);
-
-                array_push($hierarchy, $currentPost->post_name);
-
-                return $hierarchy == $post_hierarchy;
-            }
-        }
-
-        return $this->is_it_matches($post_type, $post_slug);
+        return $this->isSelfOrDescendant($currentHierarchy);
     }
 
-    private function is_generic($uri)
+    /**
+     * Check if the current page is a descendant page
+     * of the routing page. Or if the current page is it self.
+     */
+    private function isSelfOrDescendant(Collection $currentHierarchy)
     {
-        return strpos($uri, '.') ? false : true;
-    }
+        $currentHierarchyLevel = count($currentHierarchy);
+        $routingHierarchyLevel = count($this->routingHierarchy);
 
-    private function get_conditional_fn($type)
-    {
-        return isset($this->conditional_fn_map[$type]) ? '\\' . $this->conditional_fn_map[$type] : false;
-    }
-
-    private function is_it_matches($type, $slug = null)
-    {
-        $conditional_fn = $this->get_conditional_fn($type);
-        if ($conditional_fn !== false) {
-            return is_null($slug) ? call_user_func($conditional_fn) : call_user_func($conditional_fn, $slug);
+        // Current: a/b  Routing: a/b/c/d
+        // viewing a parent page of specified route.
+        if ($currentHierarchyLevel < $routingHierarchyLevel) {
+            return false;
         }
 
+        // Current: a/b/c/d  Routing: a/b
+        $intersectingHierarchy = $currentHierarchy->slice(0, $routingHierarchyLevel)->all();
+
+        return $intersectingHierarchy === $this->routingHierarchy;
+    }
+
+    /**
+     * Checks if the given type of page is being displayed
+     * by calling the conditional functions provided by WordPress.
+     *
+     * @param string $pageType The type of conditional function.
+     * @param mixed $selector  A selector for increasing the specificity.
+     *
+     * @return bool
+     */
+    private function is($pageType, $selector = null)
+    {
+        $conditionalFunction = self::getConditionalFunction($pageType);
+
+        if ($conditionalFunction !== null) {
+            return is_null($selector) ? call_user_func($conditionalFunction) : call_user_func($conditionalFunction, $selector);
+        }
+
+        return $this->fallback();
+    }
+
+    /**
+     * Falls back to the original uri validator.
+     * @return bool
+     */
+    private function fallback()
+    {
         return $this->originalUriValidator->matches($this->route, $this->request);
-    }
-
-    private function get_page_parents(\WP_Post $post, $parents = array())
-    {
-        if ($post->post_parent) {
-            $parent = \get_post($post->post_parent);
-            array_unshift($parents, urldecode($parent->post_name));
-
-            return $this->get_page_parents($parent, $parents);
-        }
-
-        return $parents;
-    }
-
-    function get_taxonomy_parents($term, $taxonomy, $parents = array())
-    {
-        if ($term->parent AND ($term->parent != $term->term_id)) {
-            $parent = get_term($term->parent, $taxonomy);
-            array_unshift($parents, urldecode($parent->slug));
-
-            return $this->get_taxonomy_parents($parent, $taxonomy, $parents);
-        }
-
-        return $parents;
-    }
-
-    function get_category_parents($term)
-    {
-        return $this->get_taxonomy_parents($term, 'category');
     }
 
 }

@@ -2,13 +2,15 @@
 
 namespace Laraish\WpSupport\Model;
 
+use Illuminate\Support\Collection;
+
 class Taxonomy extends BaseModel
 {
     /**
      * The taxonomy name
      * @type string
      */
-    public $name;
+    protected $name;
 
     /**
      * Taxonomy constructor.
@@ -23,32 +25,61 @@ class Taxonomy extends BaseModel
     /**
      * Retrieve the terms of this taxonomy that are attached to the post.
      *
-     * @param int|\WP_Post|null $post
+     * @param Post | int | \WP_Post | null $post
      *
-     * @return mixed
+     * @return Collection
      */
-    public function the_terms($post)
+    public function theTerms($post)
     {
-        return array_map(function ($term) {
-            $term->url = get_term_link($term);
+        $theTerms = array_map(function ($term) {
+            return new Term($term);
+        }, get_the_terms($post instanceof Post ? $post->wpPost() : $post, $this->name) ?: []);
 
-            return $term;
-        }, get_the_terms($post, $this->name) ?: []);
+        return $this->setAttribute(__METHOD__, new Collection($theTerms));
     }
 
+    /**
+     * Retrieve the terms in the taxonomy.
+     *
+     * @param array $args
+     *
+     * @return Collection
+     */
     public function terms($args = [])
     {
-        $queried_object = get_queried_object();
-        $args           = array_merge(['taxonomy' => $this->name], $args);
+        $args = array_merge(['taxonomy' => $this->name], $args);
 
-        return array_map(function ($term) use ($queried_object) {
-            $term->url     = get_term_link($term);
-            $term->queried = false;
-            if (isset($queried_object->term_id) AND $queried_object->taxonomy === $this->name AND $queried_object->term_id == $term->term_id) {
-                $term->queried = true;
-            }
-
-            return $term;
+        $terms = array_map(function ($term) {
+            return new Term($term);
         }, get_terms($args));
+
+        return $this->setAttribute(__METHOD__, new Collection($terms));
+    }
+
+    /**
+     * Get all Term data from database by Term field and data.
+     *
+     * @param $field
+     * @param $value
+     *
+     * @return null|Term
+     */
+    public function getTermBy($field, $value)
+    {
+        $term = get_term_by($field, $value, $this->name);
+        if ( ! $term) {
+            return null;
+        }
+
+        return $this->setAttribute(__METHOD__, new Term($term));
+    }
+
+    /**
+     * The name of this taxonomy.
+     * @return string
+     */
+    public function name()
+    {
+        return $this->setAttribute(__METHOD__, $this->name);
     }
 }

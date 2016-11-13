@@ -4,74 +4,99 @@ namespace Laraish\WpSupport\Model;
 
 abstract class BaseModel
 {
-    protected static $data_pool = [];
+    /**
+     * The model's attributes(cached value).
+     *
+     * @var array
+     */
+    protected $attributes = [];
 
     /**
-     * Get object's property on demand
+     * Get an attribute from the model.
      *
-     * @param $property
+     * @param  string $key
      *
      * @return mixed
      */
-    public function __get($property)
+    public function getAttribute($key)
     {
-        return $this->$property = $this->$property();
+        if (array_key_exists($key, $this->attributes)) {
+            return $this->getAttributeFromCache($key);
+        }
+
+        return $this->getAttributeFromMethod($key);
     }
 
+    /**
+     * Get an attribute from the $attributes array.
+     *
+     * @param  string $key
+     *
+     * @return mixed
+     */
+    protected function getAttributeFromCache($key)
+    {
+        if (array_key_exists($key, $this->attributes)) {
+            return $this->attributes[$key];
+        }
+
+        return null;
+    }
 
     /**
-     * Try to get data from data-pool associated with the $key
-     * If there is no data to get then return null
+     * Get an attribute from the $attributes array.
+     *
+     * @param  string $key
+     *
+     * @return mixed
+     */
+    protected function getAttributeFromMethod($key)
+    {
+        if (method_exists($this, $key)) {
+            return $this->$key();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get all of the current attributes on the model.
+     *
+     * @return array
+     */
+    public function getAttributes()
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * Store arbitrary data to the $attribute array.
      *
      * @param $key
      * @param $value
      *
      * @return mixed
      */
-    protected static function cache($key, $value)
+    protected function setAttribute($key, $value)
     {
-        $data = static::get_pool_data($key);
+        $namespaceMethod = explode('::', $key);
+        $key             = isset($namespaceMethod[1]) ? $namespaceMethod[1] : $key;
 
-        return $data ? $data : static::set_pool_data($key, $value);
-    }
-
-    /**
-     * Try to get the data from data-pool
-     * if there is no data to get then return null
-     *
-     * @param null $key
-     *
-     * @return array|null
-     */
-    protected static function get_pool_data($key = null)
-    {
-        // if $key is not supplied return the whole data set
-        if ($key === null) {
-            return static::$data_pool;
-        }
-
-        $data_in_pool = null;
-
-        if (array_key_exists($key, static::$data_pool)) {
-            $data_in_pool = static::$data_pool[$key];
-        }
-
-        return $data_in_pool;
-    }
-
-    /**
-     * Store arbitrary data to the data-pool
-     *
-     * @param $key
-     * @param $value
-     *
-     * @return mixed
-     */
-    protected static function set_pool_data($key, $value)
-    {
-        static::$data_pool[$key] = $value;
+        $this->attributes[$key] = $value;
 
         return $value;
+    }
+
+    /**
+     * Dynamically retrieve attributes on the model.
+     *
+     * @param  string $key
+     *
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        return $this->getAttribute($key);
     }
 
 }

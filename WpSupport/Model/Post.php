@@ -2,6 +2,10 @@
 
 namespace Laraish\WpSupport\Model;
 
+use WP_Post;
+use WP_Query;
+use DateTime;
+use Illuminate\Support\Collection;
 use Laraish\WpSupport\Query\QueryResults;
 
 class Post extends BaseModel
@@ -14,24 +18,43 @@ class Post extends BaseModel
     protected static $postType;
 
     /**
+     * The post id
      * @type integer
      */
-    public $pid;
+    protected $id;
 
     /**
-     * @type \WP_Post
+     * @type WP_Post
      */
-    public $wp_post;
+    protected $wpPost;
 
     /**
      * Post constructor.
      *
-     * @param int|\WP_Post|null $post
+     * @param int|WP_Post|null $post
      */
     public function __construct($post = null)
     {
-        $this->wp_post = \get_post($post);
-        $this->pid     = $this->wp_post->ID;
+        $this->wpPost = get_post($post);
+        $this->id     = $this->wpPost->ID;
+    }
+
+    /**
+     * Get the post ID.
+     * @return WP_Post
+     */
+    public function id()
+    {
+        return $this->setAttribute(__METHOD__, $this->id);
+    }
+
+    /**
+     * Get the original WP_Post object.
+     * @return WP_Post
+     */
+    public function wpPost()
+    {
+        return $this->setAttribute(__METHOD__, $this->wpPost);
     }
 
     /**
@@ -41,7 +64,9 @@ class Post extends BaseModel
      */
     public function title()
     {
-        return get_the_title($this->wp_post);
+        $title = get_the_title($this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $title);
     }
 
     /**
@@ -51,7 +76,9 @@ class Post extends BaseModel
      */
     public function permalink()
     {
-        return get_permalink($this->wp_post);
+        $permalink = get_permalink($this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $permalink);
     }
 
     /**
@@ -64,21 +91,21 @@ class Post extends BaseModel
      */
     public function thumbnail($size = 'full', $imgPlaceHolder = null)
     {
-        $result    = false;
-        $thumbnail = wp_get_attachment_image_src(get_post_thumbnail_id($this->wp_post), $size);
+        $thumbnailObject = null;
+        $thumbnail       = wp_get_attachment_image_src(get_post_thumbnail_id($this->wpPost), $size);
         if ($thumbnail) {
-            $result = (object)[
+            $thumbnailObject = (object)[
                 'url'    => $thumbnail[0],
                 'width'  => $thumbnail[1],
                 'height' => $thumbnail[2]
             ];
         } else if ($imgPlaceHolder) {
-            $result = (object)[
+            $thumbnailObject = (object)[
                 'url' => $imgPlaceHolder
             ];
         }
 
-        return $result;
+        return $this->setAttribute(__METHOD__, $thumbnailObject);
     }
 
     /**
@@ -89,7 +116,9 @@ class Post extends BaseModel
      */
     public function excerpt()
     {
-        return get_the_excerpt($this->wp_post);
+        $excerpt = get_the_excerpt($this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $excerpt);
     }
 
     /**
@@ -104,7 +133,7 @@ class Post extends BaseModel
         the_content();
         $content = ob_get_clean();
 
-        return $content;
+        return $this->setAttribute(__METHOD__, $content);
     }
 
     /**
@@ -115,9 +144,11 @@ class Post extends BaseModel
      *
      * @return false|int|string
      */
-    public function dateTime($format = \DateTime::RFC3339)
+    public function dateTime($format = DateTime::RFC3339)
     {
-        return get_post_time($format, false, $this->wp_post);
+        $dateTime = get_post_time($format, false, $this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $dateTime);
     }
 
     /**
@@ -129,7 +160,9 @@ class Post extends BaseModel
      */
     public function date($format = '')
     {
-        return get_post_time($format ?: get_option('date_format'), false, $this->wp_post, true);
+        $date = get_post_time($format ?: get_option('date_format'), false, $this->wpPost, true);
+
+        return $this->setAttribute(__METHOD__, $date);
     }
 
     /**
@@ -141,7 +174,9 @@ class Post extends BaseModel
      */
     public function time($format = '')
     {
-        return get_post_time($format ?: get_option('time_format'), false, $this->wp_post, true);
+        $time = get_post_time($format ?: get_option('time_format'), false, $this->wpPost, true);
+
+        return $this->setAttribute(__METHOD__, $time);
     }
 
     /**
@@ -151,7 +186,9 @@ class Post extends BaseModel
      */
     public function author()
     {
-        return new Author($this->wp_post->post_author);
+        $author = new Author($this->wpPost->post_author);
+
+        return $this->setAttribute(__METHOD__, $author);
     }
 
     /**
@@ -161,7 +198,9 @@ class Post extends BaseModel
      */
     public function isPasswordRequired()
     {
-        return post_password_required($this->wp_post);
+        $isPasswordRequired = post_password_required($this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $isPasswordRequired);
     }
 
     /**
@@ -171,7 +210,89 @@ class Post extends BaseModel
      */
     public function hasPostThumbnail()
     {
-        return has_post_thumbnail($this->wp_post);
+        $hasPostThumbnail = has_post_thumbnail($this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $hasPostThumbnail);
+    }
+
+    /**
+     * Get the parent of this post.
+     * @return static|null
+     */
+    public function parent()
+    {
+        $parent = null;
+
+        if (isset($this->wpPost->post_parent)) {
+            $parent = new static($this->wpPost->post_parent);
+        }
+
+        return $this->setAttribute(__METHOD__, $parent);
+    }
+
+    /**
+     * Get all the ancestors of this post.
+     * @return Collection
+     */
+    public function ancestors()
+    {
+        $post = $this->wpPost;
+        if ( ! $post->post_parent) {
+            return new Collection(); // do not have any ancestors
+        }
+
+        $ancestor    = get_post($post->post_parent);
+        $ancestors   = [];
+        $ancestors[] = $ancestor;
+
+        while ($ancestor->post_parent) {
+            $ancestor = get_post($ancestor->post_parent);
+            array_unshift($ancestors, $ancestor);
+        }
+
+        $ancestors = array_map(function ($post) {
+            return new static($post);
+        }, $ancestors);
+
+        $ancestors = new Collection($ancestors);
+
+        return $this->setAttribute(__METHOD__, $ancestors);
+    }
+
+    /**
+     * Test if this post is a descendant of the given post.
+     *
+     * @param int|WP_Post|static $post
+     *
+     * @return bool
+     */
+    public function isDescendantOf($post)
+    {
+        $givenPost    = $post instanceof static ? $post->wpPost() : get_post($post);
+        $myAncestors  = $this->ancestors;
+        $isDescendant = $myAncestors->search(function (Post $myAncestor) use ($givenPost) {
+            return $givenPost->ID === $myAncestor->id;
+        });
+
+        return $isDescendant !== false;
+    }
+
+    /**
+     * Test if this post is a ancestor of the given post.
+     *
+     * @param $post
+     *
+     * @return bool
+     */
+    public function isAncestorOf($post)
+    {
+        $givenPost          = $post instanceof static ? $post : new static($post);
+        $givenPostAncestors = $givenPost->ancestors;
+        $isAncestor         = $givenPostAncestors->search(function (Post $givenPostAncestor) {
+            return $this->id === $givenPostAncestor->id;
+        });
+
+        return $isAncestor !== false;
     }
 
     /**
@@ -183,20 +304,21 @@ class Post extends BaseModel
      */
     public static function query(array $query)
     {
-        $posts    = [];
-        $postType = static::$postType;
+        $postType     = static::$postType;
+        $defaultQuery = ['no_found_rows' => true];
+        $query        = array_merge($defaultQuery, $query);
 
         if ($postType AND ! isset($query['post_type'])) {
             $query['post_type'] = $postType;
         }
 
-        $wp_query_object = new \WP_Query($query);
+        $wp_query_object = new WP_Query($query);
 
         $posts = array_map(function ($post) {
             return new static($post);
         }, $wp_query_object->posts);
 
-        return count($posts) ? new QueryResults($posts, $wp_query_object) : $posts;
+        return count($posts) ? new QueryResults($posts, $wp_query_object) : [];
     }
 
     /**
@@ -204,7 +326,7 @@ class Post extends BaseModel
      *
      * @return \Laraish\Contracts\WpSupport\Query\QueryResults | array
      */
-    public static function all()
+    public static function queriedPosts()
     {
         global $wp_query;
         $posts = [];
@@ -216,5 +338,32 @@ class Post extends BaseModel
         }
 
         return count($posts) ? new QueryResults($posts, $wp_query) : $posts;
+    }
+
+    /**
+     * Get all posts.
+     * @return array|\Laraish\Contracts\WpSupport\Query\QueryResults
+     */
+    public static function all()
+    {
+        return static::query(['nopaging' => true]);
+    }
+
+    /**
+     * Dynamically retrieve property on the original WP_Post object.
+     *
+     * @param  string $key
+     *
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        $value = parent::__get($key);
+
+        if (is_null($value)) {
+            $value = isset($this->wpPost->$key) ? $this->wpPost->$key : null;
+        }
+
+        return $value;
     }
 }

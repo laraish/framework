@@ -2,87 +2,134 @@
 
 namespace Laraish\WpSupport\Model;
 
+use WP_User;
+use Illuminate\Support\Collection;
+
 class Author extends BaseModel
 {
     /**
      * @type integer
      */
-    public $id;
+    protected $id;
 
     /**
      * @type \WP_User
      */
-    public $wp_user;
+    protected $wpUser;
 
     /**
-     * Article constructor.
+     * Author constructor.
      *
      * @param null|integer $id
      */
     public function __construct($id = null)
     {
         global $post;
-        $this->id      = $id ?: $post->post_author;
-        $this->wp_user = new \WP_User($this->id);
+        $this->id     = $id ?: $post->post_author;
+        $this->wpUser = new WP_User($this->id);
+    }
+
+    public function id()
+    {
+        return $this->setAttribute(__METHOD__, $this->id);
+    }
+
+    public function wpUser()
+    {
+        return $this->setAttribute(__METHOD__, $this->wpUser);
     }
 
     public function url()
     {
-        return $this->wp_user->get('user_url');
+        $url = $this->wpUser->get('user_url');
+
+        return $this->setAttribute(__METHOD__, $url);
     }
 
-    public function posts_url()
+    public function postsUrl()
     {
-        return get_author_posts_url($this->id);
+        $postsUrl = get_author_posts_url($this->id);
+
+        return $this->setAttribute(__METHOD__, $postsUrl);
     }
 
-    public function display_name()
+    public function displayName()
     {
-        return $this->wp_user->get('display_name');
+        $displayName = $this->wpUser->get('display_name');
+
+        return $this->setAttribute(__METHOD__, $displayName);
     }
 
     public function nickname()
     {
-        return $this->wp_user->get('nickname');
+        $nickname = $this->wpUser->get('nickname');
+
+        return $this->setAttribute(__METHOD__, $nickname);
     }
 
-    public function first_name()
+    public function firstName()
     {
-        return $this->wp_user->get('first_name');
+        $firstName = $this->wpUser->get('first_name');
+
+        return $this->setAttribute(__METHOD__, $firstName);
     }
 
-    public function last_name()
+    public function lastName()
     {
-        return $this->wp_user->get('last_name');
+        $lastName = $this->wpUser->get('last_name');
+
+        return $this->setAttribute(__METHOD__, $lastName);
     }
 
     public function description()
     {
-        return $this->wp_user->get('description');
+        $description = $this->wpUser->get('description');
+
+        return $this->setAttribute(__METHOD__, $description);
     }
 
     public function email()
     {
-        return $this->wp_user->get('user_email');
+        $email = $this->wpUser->get('user_email');
+
+        return $this->setAttribute(__METHOD__, $email);
     }
 
-    public function avatar_url($options = null)
+    public function avatarUrl($options = null)
     {
-        return \get_avatar_url($this->id, $options);
+        $avatarUrl = get_avatar_url($this->id, $options);
+
+        return $this->setAttribute(__METHOD__, $avatarUrl);
     }
 
     /**
-     * @param int $limit
+     * Get all authors.
      *
-     * @return array
+     * @return array | Collection
      */
-    static function all($limit = -1)
+    public static function all()
     {
-        $users = [];
-        foreach (\get_users(['fields' => 'ID', 'number' => $limit]) as $user_id) {
+        $limit = -1;
+
+        return static::query(['number' => $limit]);
+    }
+
+    /**
+     * Find author by using the given query parameter.
+     *
+     * @param array $query
+     *
+     * @return array|Collection
+     */
+    public static function query(array $query)
+    {
+        $users           = [];
+        $query['fields'] = 'ID';
+
+        foreach (get_users($query) as $user_id) {
             $users[] = new Author($user_id);
         }
 
-        return $users;
+        return count($users) ? new Collection($users) : [];
     }
 }
