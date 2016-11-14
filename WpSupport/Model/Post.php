@@ -7,6 +7,7 @@ use WP_Query;
 use DateTime;
 use Illuminate\Support\Collection;
 use Laraish\WpSupport\Query\QueryResults;
+use Laraish\Contracts\WpSupport\Query\QueryResults as QueryResultsContract;
 
 class Post extends BaseModel
 {
@@ -231,6 +232,18 @@ class Post extends BaseModel
     }
 
     /**
+     * Get the children of this post.
+     * @return Collection
+     */
+    public function children()
+    {
+        $results  = static::query(['post_parent' => $this->id()]);
+        $children = $results instanceof QueryResultsContract ? $results->toCollection() : new Collection();
+
+        return $this->setAttribute(__METHOD__, $children);
+    }
+
+    /**
      * Get all the ancestors of this post.
      * @return Collection
      */
@@ -300,7 +313,7 @@ class Post extends BaseModel
      *
      * @param array $query The argument passed to `WP_Query` constructor.
      *
-     * @return \Laraish\Contracts\WpSupport\Query\QueryResults | array
+     * @return QueryResultsContract | array
      */
     public static function query(array $query)
     {
@@ -324,7 +337,7 @@ class Post extends BaseModel
     /**
      * Retrieve all posts in the current page.
      *
-     * @return \Laraish\Contracts\WpSupport\Query\QueryResults | array
+     * @return QueryResultsContract | array
      */
     public static function queriedPosts()
     {
@@ -342,7 +355,7 @@ class Post extends BaseModel
 
     /**
      * Get all posts.
-     * @return array|\Laraish\Contracts\WpSupport\Query\QueryResults
+     * @return array | QueryResultsContract
      */
     public static function all()
     {
