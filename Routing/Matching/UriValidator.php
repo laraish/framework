@@ -129,15 +129,15 @@ class UriValidator implements ValidatorInterface
         // e.g. `page.foo.bar`
 
         if ($this->pageType === 'category' AND is_category()) {
-            return $this->isSpecificTaxonomyTerm(true) ?: $this->fallback();
+            return $this->isSpecificTaxonomyTerm(true) ?: $this->tryFallback();
         }
 
         if ($this->pageType === 'taxonomy' AND is_tax()) {
-            return $this->isSpecificTaxonomyTerm() ?: $this->fallback();
+            return $this->isSpecificTaxonomyTerm() ?: $this->tryFallback();
         }
 
         if ($this->pageType === 'page' AND is_page()) {
-            return $this->isSpecificPage() ?: $this->fallback();
+            return $this->isSpecificPage() ?: $this->tryFallback();
         }
 
 
@@ -154,12 +154,7 @@ class UriValidator implements ValidatorInterface
     {
         $this->route   = $route;
         $this->request = $request;
-        $this->uri     = $route->uri();
-
-        // Transform the $uri to the form of `prefix.URI-fragment`   e.g. `page.about`
-        if ( ! empty($route->getPrefix())) {
-            $this->uri = str_replace('/', '.', $this->uri);
-        }
+        $this->uri     = str_replace('/', '.', $route->uri()); // Transform the $uri to the form of `prefix.URI-fragment`   e.g. `page.about`
 
         $uriComponents = explode('.', $this->uri); // e.g.  `page.foo.bar` =>  ['page', 'foo', 'bar']
 
@@ -248,10 +243,24 @@ class UriValidator implements ValidatorInterface
             return false;
         }
 
+
         // Current: a/b/c/d  Routing: a/b
         $intersectingHierarchy = $currentHierarchy->slice(0, $routingHierarchyLevel)->all();
+        $matched               = true;
+        foreach ($this->routingHierarchy as $index => $value) {
+            if ($value === '**') {
+                break;
+            }
+            if ($value === '*') {
+                continue;
+            }
+            if ($value !== $intersectingHierarchy[$index]) {
+                $matched = false;
+                break;
+            }
+        }
 
-        return $intersectingHierarchy === $this->routingHierarchy;
+        return $matched;
     }
 
     /**
@@ -272,6 +281,17 @@ class UriValidator implements ValidatorInterface
         }
 
         return $this->fallback();
+    }
+
+    /**
+     * Try to fallback to original uri validator if it is not a WordPress routing.
+     * @return bool
+     */
+    private function tryFallback()
+    {
+        $isWordPressSpecificRouting = array_key_exists($this->pageType, self::$conditionalFunctionsMap);
+
+        return $isWordPressSpecificRouting ? false : $this->fallback();
     }
 
     /**
