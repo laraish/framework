@@ -21,8 +21,8 @@ class Taxonomy
     public static function register($name, $slug, $object_type = null, $args = null)
     {
         $default_args = [
-            'label'        => $name,
-            'rewrite'      => [
+            'label'   => $name,
+            'rewrite' => [
                 'hierarchical' => true
             ],
         ];
@@ -33,8 +33,8 @@ class Taxonomy
 
         $args = is_array($args) ? array_merge($default_args, $args) : $default_args;
 
-        \add_action('init', function () use ($slug, $args, $object_type) {
-            \register_taxonomy($slug, $object_type, $args);
+        add_action('init', function () use ($slug, $args, $object_type) {
+            register_taxonomy($slug, $object_type, $args);
         });
     }
 

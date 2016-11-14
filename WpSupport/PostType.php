@@ -33,8 +33,8 @@ class PostType
 
         $args = is_array($args) ? array_merge($default_args, $args) : $default_args;
 
-        \add_action('init', function () use ($slug, $args) {
-            \register_post_type($slug, $args);
+        add_action('init', function () use ($slug, $args) {
+            register_post_type($slug, $args);
         });
     }
 
