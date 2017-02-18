@@ -14,7 +14,7 @@ trait ViewDebugger
      * @param array $data
      * @param array $mergeData
      *
-     * @return mixed
+     * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
      */
     protected function view($view = null, $data = [], $mergeData = [])
     {
