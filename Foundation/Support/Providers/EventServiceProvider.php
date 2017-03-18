@@ -4,6 +4,7 @@ namespace Laraish\Foundation\Support\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Laraish\Support\Arr;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -20,26 +21,66 @@ class EventServiceProvider extends ServiceProvider
     protected $filter = [];
 
     /**
+     * Determine if hte given array is nested.
+     *
+     * @param array $array
+     *
+     * @return bool
+     */
+    public function isNested(array $array)
+    {
+        if (Arr::isAssociative($array)) {
+            return false;
+        }
+
+        if ( ! is_array($array[0])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function addHooks($type, $name, $listeners)
+    {
+        //$listeners = is_string($listeners) ? [$listeners] : $listeners;
+
+        if ( ! is_array($listeners)) {
+            $listeners = [$listeners];
+        } else {
+            $listeners = $this->isNested($listeners) ? $listeners : [$listeners];
+        }
+
+        foreach ($listeners as $listener) {
+            $fn                = 'add_' . $type; // `add_action` or `add_filter`
+            $priority          = 10;
+            $argumentsNumber   = 10;
+            $listenerClassName = $listener;
+
+            if (is_array($listener)) {
+                if (Arr::isAssociative($listener)) {
+                    $listenerClassName = $listener['listener'];
+                    $priority          = isset($listener['priority']) ? $listener['priority'] : $priority;
+                    $argumentsNumber   = isset($listener['argumentsNumber']) ? $listener['argumentsNumber'] : $argumentsNumber;
+                } else {
+                    $listenerClassName = isset($listener[0]) ? $listener[0] : $priority;
+                    $priority          = isset($listener[1]) ? $listener[1] : $priority;
+                    $argumentsNumber   = isset($listener[2]) ? $listener[2] : $argumentsNumber;
+                }
+            }
+
+            $fn($name, function () use ($listenerClassName) {
+                return app()->call($listenerClassName . '@handle', func_get_args());
+            }, $priority, $argumentsNumber);
+        }
+    }
+
+    /**
      * Register the application's event listeners.
      *
      * @return void
      */
     public function boot()
     {
-        $add_hook = function ($type, $name, $listeners) {
-            $listeners = is_array($listeners) ? $listeners : [$listeners];
-
-            array_walk($listeners, function ($listener) use ($type, $name) {
-                $fn = 'add_' . $type; // `add_action` or `add_filter`
-                $fn($name, function () use ($listener) {
-                    $listener_instance = app()->make($listener);
-
-                    return call_user_func_array([$listener_instance, 'handle'], func_get_args());
-                }, 10, 10);
-            });
-        };
-
-
         foreach ($this->listens() as $event => $listeners) {
             $listeners = is_array($listeners) ? $listeners : [$listeners];
             foreach ($listeners as $listener) {
@@ -52,11 +93,11 @@ class EventServiceProvider extends ServiceProvider
         }
 
         foreach ($this->action as $action => $listeners) {
-            $add_hook('action', $action, $listeners);
+            $this->addHooks('action', $action, $listeners);
         }
 
         foreach ($this->filter as $filter => $listeners) {
-            $add_hook('filter', $filter, $listeners);
+            $this->addHooks('filter', $filter, $listeners);
         }
     }
 

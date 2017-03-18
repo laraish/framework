@@ -31,9 +31,18 @@ class Author extends BaseModel
             if ($id instanceof WP_User) {
                 $id     = $id->ID;
                 $wpUser = $id;
-            } else {
+            } elseif (is_numeric($id)) {
                 $id     = (int)$id;
                 $wpUser = new WP_User($id);
+            } else {
+                foreach (['slug', 'email', 'login'] as $field) {
+                    $user = get_user_by($field, $id);
+                    if ($user) {
+                        $id     = $user->ID;
+                        $wpUser = $user;
+                        break;
+                    }
+                }
             }
         } else {
             if ($queriedObject instanceof WP_User) {
@@ -44,7 +53,7 @@ class Author extends BaseModel
                 $wpUser = new WP_User($id);
             }
         }
-        
+
         $this->id     = $id;
         $this->wpUser = $wpUser;
     }
