@@ -25,8 +25,28 @@ class Author extends BaseModel
     public function __construct($id = null)
     {
         global $post;
-        $this->id     = $id ?: $post->post_author;
-        $this->wpUser = new WP_User($this->id);
+        $queriedObject = get_queried_object();
+
+        if ( ! is_null($id)) {
+            if ($id instanceof WP_User) {
+                $id     = $id->ID;
+                $wpUser = $id;
+            } else {
+                $id     = (int)$id;
+                $wpUser = new WP_User($id);
+            }
+        } else {
+            if ($queriedObject instanceof WP_User) {
+                $id     = $queriedObject->ID;
+                $wpUser = $queriedObject;
+            } else {
+                $id     = $post->post_author;
+                $wpUser = new WP_User($id);
+            }
+        }
+        
+        $this->id     = $id;
+        $this->wpUser = $wpUser;
     }
 
     public function id()
