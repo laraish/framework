@@ -105,13 +105,15 @@ class Author extends BaseModel
     /**
      * Get all authors.
      *
-     * @return array | Collection
+     * @param array $query
+     *
+     * @return array|Collection
      */
-    public static function all()
+    public static function all(array $query = [])
     {
         $limit = -1;
 
-        return static::query(['number' => $limit]);
+        return static::query(array_merge($query, ['number' => $limit]));
     }
 
     /**
@@ -127,7 +129,7 @@ class Author extends BaseModel
         $query['fields'] = 'ID';
 
         foreach (get_users($query) as $user_id) {
-            $users[] = new Author($user_id);
+            $users[] = new static($user_id);
         }
 
         return count($users) ? new Collection($users) : [];
