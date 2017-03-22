@@ -42,8 +42,6 @@ class EventServiceProvider extends ServiceProvider
 
     public function addHooks($type, $name, $listeners)
     {
-        //$listeners = is_string($listeners) ? [$listeners] : $listeners;
-
         if ( ! is_array($listeners)) {
             $listeners = [$listeners];
         } else {
@@ -69,7 +67,9 @@ class EventServiceProvider extends ServiceProvider
             }
 
             $fn($name, function () use ($listenerClassName) {
-                return app()->call($listenerClassName . '@handle', func_get_args());
+                $listenerInstance = app()->make($listenerClassName);
+
+                return call_user_func_array([$listenerInstance, 'handle'], func_get_args());
             }, $priority, $argumentsNumber);
         }
     }
