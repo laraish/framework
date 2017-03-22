@@ -355,11 +355,14 @@ class Post extends BaseModel
 
     /**
      * Get all posts.
-     * @return array | QueryResultsContract
+     *
+     * @param array $query
+     *
+     * @return array|QueryResultsContract
      */
-    public static function all()
+    public static function all(array $query = [])
     {
-        return static::query(['nopaging' => true]);
+        return static::query(array_merge($query, ['nopaging' => true]));
     }
 
     /**
