@@ -31,9 +31,14 @@ class Taxonomy extends BaseModel
      */
     public function theTerms($post)
     {
-        $theTerms = array_map(function ($term) {
-            return new Term($term);
-        }, get_the_terms($post instanceof Post ? $post->wpPost() : $post, $this->name) ?: []);
+        $theTerms = get_the_terms($post instanceof Post ? $post->wpPost() : $post, $this->name);
+        if (is_array($theTerms)) {
+            $theTerms = array_map(function ($term) {
+                return new Term($term);
+            }, $theTerms);
+        } else {
+            $theTerms = [];
+        }
 
         return $this->setAttribute(__METHOD__, new Collection($theTerms));
     }
