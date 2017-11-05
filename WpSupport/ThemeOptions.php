@@ -162,17 +162,64 @@ class ThemeOptions
     }
 
     /**
-     * Remove admin columns of the plugin "Yoast SEO"
+     * Enqueuing both scripts and styles to admin page.
      *
-     * @param bool $remove
+     * @param array $options
      */
-    public static function remove_seo_admin_columns($remove)
+    public function admin_page_assets(array $options)
     {
-        if ($remove) {
-            add_filter('wpseo_use_page_analysis', function () {
-                return false;
-            });
-        }
+        add_action('admin_enqueue_scripts', function ($hook) use ($options) {
+            $defaults = [
+                'hook'         => null,
+                'src'          => '',
+                'dependencies' => [],
+                'version'      => false,
+                'media'        => 'all',
+                'in_footer'    => false
+            ];
+
+            $scriptDependencies = ['jquery', 'underscore', 'backbone'];
+
+            foreach ($options as $optionName => $option) {
+                // Skip if the option key is 'hook'.
+                if ($optionName === 'hook') {
+                    continue;
+                }
+
+                foreach ($option as $_args) {
+                    $args = array_merge($defaults, $_args);
+
+                    // Use global `hook` parameter if possible.
+                    if (is_null($args['hook']) AND ! empty($options['hook'])) {
+                        $args['hook'] = $options['hook'];
+                    }
+
+                    if (is_callable($args['hook'])) {
+                        if ( ! call_user_func($args['hook'], $hook, get_current_screen())) {
+                            continue;
+                        }
+                    } elseif ($args['hook'] !== $hook) {
+                        continue;
+                    }
+
+                    // Generate default name if it was not supplied.
+                    if (empty($args['name'])) {
+                        $args['name'] = uniqid('laraish_', false);
+                    }
+
+                    if ($optionName === 'scripts') {
+                        if ( ! isset($_args['dependencies'])) {
+                            $args['dependencies'] = $scriptDependencies;
+                        }
+                        wp_enqueue_script($args['name'], $args['src'], $args['dependencies'], $args['version'], $args['in_footer']);
+                    }
+
+                    if ($optionName === 'styles') {
+                        wp_enqueue_style($args['name'], $args['src'], $args['dependencies'], $args['version'], $args['media']);
+                    }
+                }
+            }
+        });
     }
 
     /**
