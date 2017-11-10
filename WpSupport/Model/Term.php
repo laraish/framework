@@ -94,6 +94,36 @@ class Term extends BaseModel
     }
 
     /**
+     * Get the parent of the term.
+     * @return static | null
+     */
+    public function parent()
+    {
+        $parentId = $this->wpTerm->parent;
+        if ( ! $parentId) {
+            return null;
+        }
+
+        $parent = new static(get_term($parentId, $this->wpTerm->taxonomy));
+
+        return $this->setAttribute(__METHOD__, $parent);
+    }
+
+    /**
+     * Get the children of the term.
+     * @return Collection
+     */
+    public function children($query = [])
+    {
+        $defaultQuery = ['parent' => $this->termId()];
+        $query        = array_merge($query, $defaultQuery);
+        $taxonomy     = new Taxonomy($this->wpTerm->taxonomy);
+        $children     = $taxonomy->terms($query);
+
+        return $this->setAttribute(__METHOD__, $children);
+    }
+
+    /**
      * Get the all the parents of a specific taxonomy term.
      *
      * @return Collection

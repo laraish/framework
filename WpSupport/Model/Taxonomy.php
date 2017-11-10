@@ -3,6 +3,7 @@
 namespace Laraish\WpSupport\Model;
 
 use Illuminate\Support\Collection;
+use WP_Term_Query;
 
 class Taxonomy extends BaseModel
 {
@@ -80,11 +81,66 @@ class Taxonomy extends BaseModel
     }
 
     /**
+     * Get the terms by specifying a slug hierarchy.
+     * An example would like ['animal','cat','american-shorthair'].
+     * Where 'animal' is the slug of the root term, and followed by the secondary, tertiary.. and so on.
+     * By using this method you'll get the exactly term where positioned at the hierarchy you specified.
+     *
+     * @param array $slugHierarchy
+     *
+     * @return Collection
+     */
+    public function getTermsBySlugHierarchy(array $slugHierarchy)
+    {
+        $taxonomyName        = $this->name();
+        $rootTermSlug        = $slugHierarchy[0];
+        $descendantTermSlugs = array_slice($slugHierarchy, 1);
+        $parentTerm          = get_term_by('slug', $rootTermSlug, $taxonomyName);
+        $terms               = [new Term($parentTerm)];
+
+        foreach ($descendantTermSlugs as $childrenCategorySlug) {
+            $query = new WP_Term_Query([
+                'taxonomy' => $taxonomyName,
+                'slug'     => $childrenCategorySlug,
+                'parent'   => $parentTerm->term_id
+            ]);
+
+            $queriedTerms = $query->get_terms();
+            if ($queriedTerms) {
+                $term       = $queriedTerms[0];
+                $terms[]    = new Term($term);
+                $parentTerm = $term;
+            }
+        }
+
+        $terms = new Collection($terms);
+
+        return $this->setAttribute(__METHOD__, $terms);
+    }
+
+    /**
      * The name of this taxonomy.
      * @return string
      */
     public function name()
     {
         return $this->setAttribute(__METHOD__, $this->name);
+    }
+
+    /**
+     * Get slug hierarchy by a term.
+     *
+     * @param Term $term
+     *
+     * @return array
+     */
+    public static function getSlugHierarchyByTerm(Term $term)
+    {
+        $categoryHierarchy = $term->ancestors()->map(function (Term $term) {
+            return $term->slug();
+        })->push($term->slug());
+
+
+        return implode('/', $categoryHierarchy->toArray());
     }
 }
