@@ -16,6 +16,10 @@ class ThemeOptionsProvider extends ServiceProvider
     {
         $options = config('theme');
         foreach ($options as $method => $option) {
+            if (method_exists($this, $method)) {
+                $this->$method($option);
+                continue;
+            }
             if (method_exists(ThemeOptions::class, $method)) {
                 \call_user_func(ThemeOptions::class . "::${method}", $option);
             }

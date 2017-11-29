@@ -162,6 +162,42 @@ class ThemeOptions
     }
 
     /**
+     * Register page templates.
+     *
+     * @param array $templates
+     */
+    public function page_templates(array $templates)
+    {
+        foreach ($templates as $template) {
+            if (isset($template['post'])) {
+                foreach ((array)$template['post'] as $post) {
+                    $post = $post instanceof Post ? $post : new Post($post);
+                    add_filter("theme_{$post->post_type}_templates", function ($post_templates, $wp_theme, $post_being_edited) use ($template, $post) {
+                        $post_being_edited = $post_being_edited ?? get_post();
+                        if ($post_being_edited instanceof WP_Post AND (int)$post_being_edited->ID === $post->id()) {
+                            $templateName                  = $templatePath = $template['name'];
+                            $post_templates[$templatePath] = $templateName;
+                        }
+
+                        return $post_templates;
+                    }, 10, 3);
+                }
+            }
+
+            if (isset($template['post_type'])) {
+                foreach ((array)$template['post_type'] as $post_type) {
+                    add_filter("theme_{$post_type}_templates", function ($post_templates) use ($template) {
+                        $templateName                  = $templatePath = $template['name'];
+                        $post_templates[$templatePath] = $templateName;
+
+                        return $post_templates;
+                    });
+                }
+            }
+        }
+    }
+
+    /**
      * Enqueuing both scripts and styles to admin page.
      *
      * @param array $options
