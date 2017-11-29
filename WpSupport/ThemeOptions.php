@@ -2,6 +2,9 @@
 
 namespace Laraish\WpSupport;
 
+use Laraish\WpSupport\Model\Post;
+use WP_Post;
+
 class ThemeOptions
 {
 
