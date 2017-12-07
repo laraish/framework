@@ -169,7 +169,7 @@ class ThemeOptions
      *
      * @param array $templates
      */
-    public function page_templates(array $templates)
+    public static function page_templates(array $templates)
     {
         foreach ($templates as $template) {
             if (isset($template['post'])) {
@@ -205,7 +205,7 @@ class ThemeOptions
      *
      * @param array $options
      */
-    public function admin_page_assets(array $options)
+    public static function admin_page_assets(array $options)
     {
         add_action('admin_enqueue_scripts', function ($hook) use ($options) {
             $defaults = [
