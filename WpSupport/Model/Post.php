@@ -313,7 +313,7 @@ class Post extends BaseModel
      *
      * @param array $query The argument passed to `WP_Query` constructor.
      *
-     * @return QueryResultsContract | array
+     * @return QueryResultsContract
      */
     public static function query(array $query)
     {
@@ -331,13 +331,13 @@ class Post extends BaseModel
             return new static($post);
         }, $wp_query_object->posts);
 
-        return count($posts) ? new QueryResults($posts, $wp_query_object) : [];
+        return new QueryResults($posts, $wp_query_object);
     }
 
     /**
      * Retrieve all posts in the current page.
      *
-     * @return QueryResultsContract | array
+     * @return QueryResultsContract
      */
     public static function queriedPosts()
     {
@@ -350,7 +350,7 @@ class Post extends BaseModel
             }, (array)$wp_query->posts);
         }
 
-        return count($posts) ? new QueryResults($posts, $wp_query) : $posts;
+        return new QueryResults($posts, $wp_query);
     }
 
     /**
