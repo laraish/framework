@@ -20,6 +20,10 @@ class Kernel extends HttpKernel
      */
     public function handle($request)
     {
+        if (defined('ARTISAN_BINARY')) {
+            return parent::handle($request);
+        }
+
         $request->enableHttpMethodParameterOverride();
         $this->sendRequestThroughRouter($request);
 
@@ -35,6 +39,10 @@ class Kernel extends HttpKernel
      */
     protected function sendRequestThroughRouter($request)
     {
+        if (defined('ARTISAN_BINARY')) {
+            return parent::sendRequestThroughRouter($request);
+        }
+        
         $this->app->instance('request', $request);
 
         Facade::clearResolvedInstance('request');

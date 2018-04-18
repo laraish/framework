@@ -30,6 +30,9 @@ class Kernel extends ConsoleKernel
             define('WP_USE_THEMES', false);
         }
 
+        // Prevent from loading plugins (it could be error-prone if load plugins).
+        define('WP_PLUGIN_DIR', '/NULL');
+
         $wp_load = realpath($app->basePath() . '/../../../wp-load.php');
 
         if (file_exists($wp_load)) {
