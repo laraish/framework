@@ -42,7 +42,7 @@ class Kernel extends HttpKernel
         if (defined('ARTISAN_BINARY')) {
             return parent::sendRequestThroughRouter($request);
         }
-        
+
         $this->app->instance('request', $request);
 
         Facade::clearResolvedInstance('request');
