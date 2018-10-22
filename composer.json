@@ -23,7 +23,7 @@
         "laravel/framework": "5.7.*",
         "laraish/contracts": "0.2.*",
         "laraish/support": "0.2.*",
-        "laraish/pagination": "0.2.*",
+        "laraish/pagination": "0.3.*",
         "laraish/options": "0.2.*"
     },
     "autoload": {
