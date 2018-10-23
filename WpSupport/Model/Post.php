@@ -37,14 +37,26 @@ class Post extends BaseModel
     public function __construct($post = null)
     {
         $this->wpPost = get_post($post);
-        $this->id     = $this->wpPost->ID;
+        $this->id = $this->wpPost->ID;
+    }
+
+    /**
+     * @return array|bool|mixed
+     */
+    public function resolveAcfFields()
+    {
+        if ( ! \function_exists('get_fields')) {
+            return [];
+        }
+
+        return get_fields($this->id);
     }
 
     /**
      * Get the post ID.
-     * @return WP_Post
+     * @return int
      */
-    public function id()
+    public function id(): int
     {
         return $this->setAttribute(__METHOD__, $this->id);
     }
@@ -53,7 +65,7 @@ class Post extends BaseModel
      * Get the original WP_Post object.
      * @return WP_Post
      */
-    public function wpPost()
+    public function wpPost(): WP_Post
     {
         return $this->setAttribute(__METHOD__, $this->wpPost);
     }
@@ -63,7 +75,7 @@ class Post extends BaseModel
      *
      * @return string
      */
-    public function title()
+    public function title(): string
     {
         $title = get_the_title($this->wpPost);
 
@@ -93,7 +105,7 @@ class Post extends BaseModel
     public function thumbnail($size = 'full', $imgPlaceHolder = null)
     {
         $thumbnailObject = null;
-        $thumbnail       = wp_get_attachment_image_src(get_post_thumbnail_id($this->wpPost), $size);
+        $thumbnail = wp_get_attachment_image_src(get_post_thumbnail_id($this->wpPost), $size);
         if ($thumbnail) {
             $thumbnailObject = (object)[
                 'url'    => $thumbnail[0],
@@ -128,7 +140,7 @@ class Post extends BaseModel
      *
      * @return string
      */
-    public function content()
+    public function content(): string
     {
         ob_start();
         the_content();
@@ -185,7 +197,7 @@ class Post extends BaseModel
      *
      * @return Author
      */
-    public function author()
+    public function author(): Author
     {
         $author = new Author($this->wpPost->post_author);
 
@@ -197,7 +209,7 @@ class Post extends BaseModel
      *
      * @return bool
      */
-    public function isPasswordRequired()
+    public function isPasswordRequired(): bool
     {
         $isPasswordRequired = post_password_required($this->wpPost);
 
@@ -209,7 +221,7 @@ class Post extends BaseModel
      *
      * @return bool
      */
-    public function hasPostThumbnail()
+    public function hasPostThumbnail(): bool
     {
         $hasPostThumbnail = has_post_thumbnail($this->wpPost);
 
@@ -235,9 +247,9 @@ class Post extends BaseModel
      * Get the children of this post.
      * @return Collection
      */
-    public function children()
+    public function children(): Collection
     {
-        $results  = static::query(['post_parent' => $this->id()]);
+        $results = static::query(['post_parent' => $this->id()]);
         $children = $results instanceof QueryResultsContract ? $results->toCollection() : new Collection();
 
         return $this->setAttribute(__METHOD__, $children);
@@ -247,15 +259,15 @@ class Post extends BaseModel
      * Get all the ancestors of this post.
      * @return Collection
      */
-    public function ancestors()
+    public function ancestors(): Collection
     {
         $post = $this->wpPost;
         if ( ! $post->post_parent) {
             return new Collection(); // do not have any ancestors
         }
 
-        $ancestor    = get_post($post->post_parent);
-        $ancestors   = [];
+        $ancestor = get_post($post->post_parent);
+        $ancestors = [];
         $ancestors[] = $ancestor;
 
         while ($ancestor->post_parent) {
@@ -279,10 +291,10 @@ class Post extends BaseModel
      *
      * @return bool
      */
-    public function isDescendantOf($post)
+    public function isDescendantOf($post): bool
     {
-        $givenPost    = $post instanceof static ? $post->wpPost() : get_post($post);
-        $myAncestors  = $this->ancestors;
+        $givenPost = $post instanceof static ? $post->wpPost() : get_post($post);
+        $myAncestors = $this->ancestors;
         $isDescendant = $myAncestors->search(function (Post $myAncestor) use ($givenPost) {
             return $givenPost->ID === $myAncestor->id;
         });
@@ -297,11 +309,11 @@ class Post extends BaseModel
      *
      * @return bool
      */
-    public function isAncestorOf($post)
+    public function isAncestorOf($post): bool
     {
-        $givenPost          = $post instanceof static ? $post : new static($post);
+        $givenPost = $post instanceof static ? $post : new static($post);
         $givenPostAncestors = $givenPost->ancestors;
-        $isAncestor         = $givenPostAncestors->search(function (Post $givenPostAncestor) {
+        $isAncestor = $givenPostAncestors->search(function (Post $givenPostAncestor) {
             return $this->id === $givenPostAncestor->id;
         });
 
@@ -315,11 +327,11 @@ class Post extends BaseModel
      *
      * @return QueryResultsContract
      */
-    public static function query(array $query)
+    public static function query(array $query): QueryResultsContract
     {
-        $postType     = static::$postType;
+        $postType = static::$postType;
         $defaultQuery = ['no_found_rows' => true];
-        $query        = array_merge($defaultQuery, $query);
+        $query = array_merge($defaultQuery, $query);
 
         if ($postType AND ! isset($query['post_type'])) {
             $query['post_type'] = $postType;
@@ -339,7 +351,7 @@ class Post extends BaseModel
      *
      * @return QueryResultsContract
      */
-    public static function queriedPosts()
+    public static function queriedPosts(): QueryResultsContract
     {
         global $wp_query;
         $posts = [];
@@ -376,8 +388,8 @@ class Post extends BaseModel
     {
         $value = parent::__get($key);
 
-        if (is_null($value)) {
-            $value = isset($this->wpPost->$key) ? $this->wpPost->$key : null;
+        if (null === $value) {
+            $value = $this->wpPost->$key ?? null;
         }
 
         return $value;

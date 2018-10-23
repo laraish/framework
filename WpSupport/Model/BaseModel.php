@@ -12,6 +12,12 @@ abstract class BaseModel
     protected $attributes = [];
 
     /**
+     * The ACF fields
+     * @var array
+     */
+    protected $acfFields;
+
+    /**
      * Get an attribute from the model.
      *
      * @param  string $key
@@ -24,7 +30,54 @@ abstract class BaseModel
             return $this->getAttributeFromCache($key);
         }
 
-        return $this->getAttributeFromMethod($key);
+        if (method_exists($this, $key)) {
+            return $this->getAttributeFromMethod($key);
+        }
+
+        if ($originalMethod = $this->getOriginalKey($key)) {
+            if (method_exists($this, $originalMethod)) {
+                return strip_tags($this->$originalMethod);
+            }
+        }
+
+        if ($this->getAcfFields()) {
+            return $this->getAttributeFromAcfFields($key);
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the ACF fields.
+     * @return array
+     */
+    public function getAcfFields(): array
+    {
+        return $this->acfFields ?? ($this->acfFields = $this->resolveAcfFields());
+    }
+
+    /**
+     * Resolve the ACF fields.
+     * @return mixed
+     */
+    public function resolveAcfFields()
+    {
+        return [];
+    }
+
+    /**
+     * Remove the modifier `text` from the given method name.
+     * e.g. `permalink_text` --> `permalink`
+     *
+     * @param string $key
+     *
+     * @return string
+     */
+    protected function getOriginalKey(string $key): ?string
+    {
+        $originalKey = preg_replace('/_text$/', '', $key);
+
+        return $originalKey === $key ? null : $originalKey;
     }
 
     /**
@@ -50,10 +103,25 @@ abstract class BaseModel
      *
      * @return mixed
      */
-    protected function getAttributeFromMethod($key)
+    protected function getAttributeFromMethod(string $key)
     {
         if (method_exists($this, $key)) {
             return $this->$key();
+        }
+
+        return null;
+    }
+
+    protected function getAttributeFromAcfFields(string $key)
+    {
+        if (isset($this->acfFields[$key])) {
+            return $this->acfFields[$key];
+        }
+
+        if ($originalKey = $this->getOriginalKey($key)) {
+            if (isset($this->fields[$originalKey])) {
+                return strip_tags($this->acfFields[$originalKey]);
+            }
         }
 
         return null;
@@ -80,7 +148,7 @@ abstract class BaseModel
     protected function setAttribute($key, $value)
     {
         $namespaceMethod = explode('::', $key);
-        $key             = isset($namespaceMethod[1]) ? $namespaceMethod[1] : $key;
+        $key = isset($namespaceMethod[1]) ? $namespaceMethod[1] : $key;
 
         $this->attributes[$key] = $value;
 

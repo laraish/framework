@@ -27,18 +27,18 @@ class Author extends BaseModel
         global $post;
         $queriedObject = get_queried_object();
 
-        if ( ! is_null($id)) {
+        if (null !== $id) {
             if ($id instanceof WP_User) {
-                $id     = $id->ID;
+                $id = $id->ID;
                 $wpUser = $id;
             } elseif (is_numeric($id)) {
-                $id     = (int)$id;
+                $id = (int)$id;
                 $wpUser = new WP_User($id);
             } else {
                 foreach (['slug', 'email', 'login'] as $field) {
                     $user = get_user_by($field, $id);
                     if ($user) {
-                        $id     = $user->ID;
+                        $id = $user->ID;
                         $wpUser = $user;
                         break;
                     }
@@ -46,36 +46,50 @@ class Author extends BaseModel
             }
         } else {
             if ($queriedObject instanceof WP_User) {
-                $id     = $queriedObject->ID;
+                $id = $queriedObject->ID;
                 $wpUser = $queriedObject;
             } else {
-                $id     = $post->post_author;
+                $id = $post->post_author;
                 $wpUser = new WP_User($id);
             }
         }
 
-        $this->id     = $id;
+        $this->id = $id;
         $this->wpUser = $wpUser;
     }
 
-    public function id()
+    /**
+     * Resolve the ACF fields.
+     * @return array|bool|mixed
+     */
+    public function resolveAcfFields()
+    {
+        if ( ! \function_exists('get_fields')) {
+            return [];
+        }
+
+        return get_fields($this->wpUser);
+    }
+
+
+    public function id(): int
     {
         return $this->setAttribute(__METHOD__, $this->id);
     }
 
-    public function wpUser()
+    public function wpUser(): WP_User
     {
         return $this->setAttribute(__METHOD__, $this->wpUser);
     }
 
-    public function url()
+    public function url(): string
     {
         $url = $this->wpUser->get('user_url');
 
         return $this->setAttribute(__METHOD__, $url);
     }
 
-    public function postsUrl()
+    public function postsUrl(): string
     {
         $postsUrl = get_author_posts_url($this->id);
 
@@ -136,9 +150,9 @@ class Author extends BaseModel
      *
      * @param array $query
      *
-     * @return array|Collection
+     * @return Collection
      */
-    public static function all(array $query = [])
+    public static function all(array $query = []): Collection
     {
         $limit = -1;
 
@@ -150,17 +164,17 @@ class Author extends BaseModel
      *
      * @param array $query
      *
-     * @return array|Collection
+     * @return Collection
      */
-    public static function query(array $query)
+    public static function query(array $query): Collection
     {
-        $users           = [];
+        $users = [];
         $query['fields'] = 'ID';
 
         foreach (get_users($query) as $user_id) {
             $users[] = new static($user_id);
         }
 
-        return count($users) ? new Collection($users) : [];
+        return new Collection($users);
     }
 }

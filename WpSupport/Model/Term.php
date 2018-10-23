@@ -2,8 +2,8 @@
 
 namespace Laraish\WpSupport\Model;
 
-use Illuminate\Support\Collection;
 use WP_Term;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 class Term extends BaseModel
@@ -24,10 +24,23 @@ class Term extends BaseModel
     }
 
     /**
+     * Resolve the ACF fields.
+     * @return array|bool|mixed
+     */
+    public function resolveAcfFields()
+    {
+        if ( ! \function_exists('get_fields')) {
+            return [];
+        }
+
+        return get_fields($this->wpTerm);
+    }
+
+    /**
      * Get the original WP_Term object.
      * @return WP_Term
      */
-    public function wpTerm()
+    public function wpTerm(): WP_Term
     {
         return $this->setAttribute(__METHOD__, $this->wpTerm);
     }
@@ -36,7 +49,7 @@ class Term extends BaseModel
      * The name of this term.
      * @return string
      */
-    public function name()
+    public function name(): string
     {
         return $this->setAttribute(__METHOD__, $this->wpTerm->name);
     }
@@ -45,7 +58,7 @@ class Term extends BaseModel
      * The slug of this term.
      * @return string
      */
-    public function slug()
+    public function slug(): string
     {
         return $this->setAttribute(__METHOD__, $this->wpTerm->slug);
     }
@@ -54,7 +67,7 @@ class Term extends BaseModel
      * The term_id of this term.
      * @return int
      */
-    public function termId()
+    public function termId(): int
     {
         return $this->setAttribute(__METHOD__, $this->wpTerm->term_id);
     }
@@ -63,7 +76,7 @@ class Term extends BaseModel
      * The term_taxonomy_id of this term.
      * @return int
      */
-    public function termTaxonomyId()
+    public function termTaxonomyId(): int
     {
         return $this->setAttribute(__METHOD__, $this->wpTerm->term_taxonomy_id);
     }
@@ -73,7 +86,7 @@ class Term extends BaseModel
      *
      * @return bool
      */
-    public function isQueried()
+    public function isQueried(): bool
     {
         $queried_object = get_queried_object();
 
@@ -86,7 +99,7 @@ class Term extends BaseModel
      * Get the url of the term.
      * @return string
      */
-    public function url()
+    public function url(): string
     {
         $url = get_term_link($this->wpTerm);
 
@@ -97,7 +110,7 @@ class Term extends BaseModel
      * Get the parent of the term.
      * @return static | null
      */
-    public function parent()
+    public function parent(): ?self
     {
         $parentId = $this->wpTerm->parent;
         if ( ! $parentId) {
@@ -111,14 +124,17 @@ class Term extends BaseModel
 
     /**
      * Get the children of the term.
+     *
+     * @param array $query
+     *
      * @return Collection
      */
-    public function children($query = [])
+    public function children(array $query = []): Collection
     {
         $defaultQuery = ['parent' => $this->termId()];
-        $query        = array_merge($query, $defaultQuery);
-        $taxonomy     = new Taxonomy($this->wpTerm->taxonomy);
-        $children     = $taxonomy->terms($query);
+        $query = array_merge($query, $defaultQuery);
+        $taxonomy = new Taxonomy($this->wpTerm->taxonomy);
+        $children = $taxonomy->terms($query);
 
         return $this->setAttribute(__METHOD__, $children);
     }
@@ -128,10 +144,10 @@ class Term extends BaseModel
      *
      * @return Collection
      */
-    public function ancestors()
+    public function ancestors(): Collection
     {
         $ancestors = [];
-        $term      = $this->wpTerm;
+        $term = $this->wpTerm;
         while ( ! is_wp_error($term) AND ! empty($term->parent)) {
             $ancestors[] = $term = get_term($term->parent, $this->wpTerm->taxonomy);
         }
@@ -150,13 +166,14 @@ class Term extends BaseModel
      * @param WP_Term|static $term
      *
      * @return bool
+     * @throws \InvalidArgumentException
      */
-    public function isDescendantOf($term)
+    public function isDescendantOf($term): bool
     {
         $this->checkArgumentType($term, __METHOD__);
 
-        $givenTerm    = $term instanceof static ? $term->wpTerm() : $term;
-        $myAncestors  = $this->ancestors;
+        $givenTerm = $term instanceof static ? $term->wpTerm() : $term;
+        $myAncestors = $this->ancestors;
         $isDescendant = $myAncestors->search(function (Term $myAncestor) use ($givenTerm) {
             return $givenTerm->term_id === $myAncestor->termId;
         });
@@ -171,13 +188,13 @@ class Term extends BaseModel
      *
      * @return bool
      */
-    public function isAncestorOf($term)
+    public function isAncestorOf($term): bool
     {
         $this->checkArgumentType($term, __METHOD__);
 
-        $givenTerm          = $term instanceof static ? $term : new static($term);
+        $givenTerm = $term instanceof static ? $term : new static($term);
         $givenTermAncestors = $givenTerm->ancestors;
-        $isAncestor         = $givenTermAncestors->search(function (Term $givenPostAncestor) {
+        $isAncestor = $givenTermAncestors->search(function (Term $givenPostAncestor) {
             return $this->termId === $givenPostAncestor->termId;
         });
 
@@ -189,8 +206,10 @@ class Term extends BaseModel
      *
      * @param mixed $value
      * @param string $methodName
+     *
+     * @throws \InvalidArgumentException
      */
-    protected function checkArgumentType($value, $methodName)
+    protected function checkArgumentType($value, $methodName): void
     {
         if ( ! ($value instanceof static OR $value instanceof WP_Term)) {
             $className = static::class;
@@ -209,8 +228,8 @@ class Term extends BaseModel
     {
         $value = parent::__get($key);
 
-        if (is_null($value)) {
-            $value = isset($this->wpTerm->$key) ? $this->wpTerm->$key : null;
+        if (null === $value) {
+            $value = $this->wpTerm->$key ?? null;
         }
 
         return $value;

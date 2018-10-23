@@ -2,8 +2,8 @@
 
 namespace Laraish\WpSupport\Model;
 
-use Illuminate\Support\Collection;
 use WP_Term_Query;
+use Illuminate\Support\Collection;
 
 class Taxonomy extends BaseModel
 {
@@ -18,7 +18,7 @@ class Taxonomy extends BaseModel
      *
      * @param string $name
      */
-    public function __construct($name)
+    public function __construct(string $name)
     {
         $this->name = $name;
     }
@@ -30,10 +30,10 @@ class Taxonomy extends BaseModel
      *
      * @return Collection
      */
-    public function theTerms($post)
+    public function theTerms($post): Collection
     {
         $theTerms = get_the_terms($post instanceof Post ? $post->wpPost() : $post, $this->name);
-        if (is_array($theTerms)) {
+        if (\is_array($theTerms)) {
             $theTerms = array_map(function ($term) {
                 return new Term($term);
             }, $theTerms);
@@ -51,7 +51,7 @@ class Taxonomy extends BaseModel
      *
      * @return Collection
      */
-    public function terms($args = [])
+    public function terms(array $args = []): Collection
     {
         $args = array_merge(['taxonomy' => $this->name], $args);
 
@@ -70,7 +70,7 @@ class Taxonomy extends BaseModel
      *
      * @return null|Term
      */
-    public function getTermBy($field, $value)
+    public function getTermBy($field, $value): ?Term
     {
         $term = get_term_by($field, $value, $this->name);
         if ( ! $term) {
@@ -90,13 +90,13 @@ class Taxonomy extends BaseModel
      *
      * @return Collection
      */
-    public function getTermsBySlugHierarchy(array $slugHierarchy)
+    public function getTermsBySlugHierarchy(array $slugHierarchy): Collection
     {
-        $taxonomyName        = $this->name();
-        $rootTermSlug        = $slugHierarchy[0];
-        $descendantTermSlugs = array_slice($slugHierarchy, 1);
-        $parentTerm          = get_term_by('slug', $rootTermSlug, $taxonomyName);
-        $terms               = [new Term($parentTerm)];
+        $taxonomyName = $this->name();
+        $rootTermSlug = $slugHierarchy[0];
+        $descendantTermSlugs = \array_slice($slugHierarchy, 1);
+        $parentTerm = get_term_by('slug', $rootTermSlug, $taxonomyName);
+        $terms = [new Term($parentTerm)];
 
         foreach ($descendantTermSlugs as $childrenCategorySlug) {
             $query = new WP_Term_Query([
@@ -107,8 +107,8 @@ class Taxonomy extends BaseModel
 
             $queriedTerms = $query->get_terms();
             if ($queriedTerms) {
-                $term       = $queriedTerms[0];
-                $terms[]    = new Term($term);
+                $term = $queriedTerms[0];
+                $terms[] = new Term($term);
                 $parentTerm = $term;
             }
         }
@@ -122,7 +122,7 @@ class Taxonomy extends BaseModel
      * The name of this taxonomy.
      * @return string
      */
-    public function name()
+    public function name(): string
     {
         return $this->setAttribute(__METHOD__, $this->name);
     }
@@ -134,7 +134,7 @@ class Taxonomy extends BaseModel
      *
      * @return array
      */
-    public static function getSlugHierarchyByTerm(Term $term)
+    public static function getSlugHierarchyByTerm(Term $term): array
     {
         $categoryHierarchy = $term->ancestors()->map(function (Term $term) {
             return $term->slug();
