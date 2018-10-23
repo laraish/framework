@@ -53,7 +53,7 @@ abstract class BaseModel
      */
     public function getAcfFields(): array
     {
-        return $this->acfFields ?? ($this->acfFields = $this->resolveAcfFields());
+        return $this->acfFields ?? ($this->acfFields = $this->resolveAcfFields() ?: []);
     }
 
     /**
@@ -112,6 +112,13 @@ abstract class BaseModel
         return null;
     }
 
+    /**
+     * Get the attribute from ACF fields.
+     *
+     * @param string $key
+     *
+     * @return mixed|null|string
+     */
     protected function getAttributeFromAcfFields(string $key)
     {
         if (isset($this->acfFields[$key])) {
@@ -132,7 +139,7 @@ abstract class BaseModel
      *
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes(): array
     {
         return $this->attributes;
     }
@@ -148,7 +155,7 @@ abstract class BaseModel
     protected function setAttribute($key, $value)
     {
         $namespaceMethod = explode('::', $key);
-        $key = isset($namespaceMethod[1]) ? $namespaceMethod[1] : $key;
+        $key = $namespaceMethod[1] ?? $key;
 
         $this->attributes[$key] = $value;
 

@@ -7,7 +7,6 @@ use WP_Query;
 use DateTime;
 use Illuminate\Support\Collection;
 use Laraish\WpSupport\Query\QueryResults;
-use Laraish\Contracts\WpSupport\Query\QueryResults as QueryResultsContract;
 
 class Post extends BaseModel
 {
@@ -127,7 +126,7 @@ class Post extends BaseModel
      *
      * @return string
      */
-    public function excerpt()
+    public function excerpt(): string
     {
         $excerpt = get_the_excerpt($this->wpPost);
 
@@ -236,7 +235,7 @@ class Post extends BaseModel
     {
         $parent = null;
 
-        if (isset($this->wpPost->post_parent)) {
+        if ($this->wpPost->post_parent !== null) {
             $parent = new static($this->wpPost->post_parent);
         }
 
@@ -249,8 +248,7 @@ class Post extends BaseModel
      */
     public function children(): Collection
     {
-        $results = static::query(['post_parent' => $this->id()]);
-        $children = $results instanceof QueryResultsContract ? $results->toCollection() : new Collection();
+        $children = static::query(['post_parent' => $this->id()]);
 
         return $this->setAttribute(__METHOD__, $children);
     }
@@ -325,15 +323,15 @@ class Post extends BaseModel
      *
      * @param array $query The argument passed to `WP_Query` constructor.
      *
-     * @return QueryResultsContract
+     * @return QueryResults
      */
-    public static function query(array $query): QueryResultsContract
+    public static function query(array $query): QueryResults
     {
         $postType = static::$postType;
         $defaultQuery = ['no_found_rows' => true];
         $query = array_merge($defaultQuery, $query);
 
-        if ($postType AND ! isset($query['post_type'])) {
+        if ($postType && ! isset($query['post_type'])) {
             $query['post_type'] = $postType;
         }
 
@@ -349,9 +347,9 @@ class Post extends BaseModel
     /**
      * Retrieve all posts in the current page.
      *
-     * @return QueryResultsContract
+     * @return QueryResults
      */
-    public static function queriedPosts(): QueryResultsContract
+    public static function queriedPosts(): QueryResults
     {
         global $wp_query;
         $posts = [];
@@ -370,9 +368,9 @@ class Post extends BaseModel
      *
      * @param array $query
      *
-     * @return array|QueryResultsContract
+     * @return QueryResults
      */
-    public static function all(array $query = [])
+    public static function all(array $query = []): QueryResults
     {
         return static::query(array_merge($query, ['nopaging' => true]));
     }

@@ -3,12 +3,11 @@
 namespace Laraish\WpSupport\Query;
 
 use WP_Query;
-use ArrayObject;
 use Laraish\Pagination\Paginator;
 use Illuminate\Support\Collection;
-use Laraish\Contracts\WpSupport\Query\QueryResults as QueryResultsContracts;
+use Laraish\Contracts\Pagination\Paginator as PaginatorContract;
 
-class QueryResults extends ArrayObject implements QueryResultsContracts
+class QueryResults extends Collection
 {
     /**
      * The WP_Query object.
@@ -22,7 +21,7 @@ class QueryResults extends ArrayObject implements QueryResultsContracts
      * @param array $items
      * @param WP_Query $wp_query
      */
-    public function __construct(array $items = [], WP_Query $wp_query)
+    public function __construct(array $items, WP_Query $wp_query)
     {
         parent::__construct($items);
 
@@ -34,13 +33,13 @@ class QueryResults extends ArrayObject implements QueryResultsContracts
      *
      * @param array $options
      *
-     * @return \Laraish\Contracts\Pagination\Paginator
+     * @return PaginatorContract
      */
-    public function getPagination(array $options = [])
+    public function getPagination(array $options = []): PaginatorContract
     {
-        $wp_query    = $this->wp_query;
-        $total       = (int)$wp_query->found_posts;
-        $perPage     = (int)$wp_query->query_vars['posts_per_page'];
+        $wp_query = $this->wp_query;
+        $total = (int)$wp_query->found_posts;
+        $perPage = (int)$wp_query->query_vars['posts_per_page'];
         $currentPage = (int)$wp_query->query_vars['paged'];
 
         return new Paginator($total, $perPage, $currentPage, $options);
@@ -50,17 +49,8 @@ class QueryResults extends ArrayObject implements QueryResultsContracts
      * Get the original WP_Query object.
      * @return WP_Query
      */
-    public function wpQuery()
+    public function wpQuery(): WP_Query
     {
         return $this->wp_query;
-    }
-
-    /**
-     * Convert to Collection object.
-     * @return \Illuminate\Support\Collection
-     */
-    public function toCollection()
-    {
-        return new Collection((array)$this);
     }
 }
