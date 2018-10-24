@@ -272,7 +272,7 @@ class Term extends BaseModel
             ]
         ]);
 
-        $method = isset($query['posts_per_page']) ? 'all' : 'query';
+        $method = isset($query['posts_per_page']) ? 'query' : 'all';
 
         return $postClassName::$method($query);
     }
