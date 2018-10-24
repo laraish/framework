@@ -15,7 +15,7 @@ class Post extends BaseModel
      *
      * @var string|array
      */
-    protected static $postType;
+    public const POST_TYPE = 'post';
 
     /**
      * The post id
@@ -121,6 +121,18 @@ class Post extends BaseModel
     }
 
     /**
+     * Check if post has an image attached.
+     *
+     * @return bool
+     */
+    public function hasThumbnail(): bool
+    {
+        $hasPostThumbnail = has_post_thumbnail($this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $hasPostThumbnail);
+    }
+
+    /**
      * Get the post excerpt.
      * This method must be called within `The Loop`.
      *
@@ -201,30 +213,6 @@ class Post extends BaseModel
         $author = new Author($this->wpPost->post_author);
 
         return $this->setAttribute(__METHOD__, $author);
-    }
-
-    /**
-     * Test if password required for this post.
-     *
-     * @return bool
-     */
-    public function isPasswordRequired(): bool
-    {
-        $isPasswordRequired = post_password_required($this->wpPost);
-
-        return $this->setAttribute(__METHOD__, $isPasswordRequired);
-    }
-
-    /**
-     * Check if post has an image attached.
-     *
-     * @return bool
-     */
-    public function hasPostThumbnail(): bool
-    {
-        $hasPostThumbnail = has_post_thumbnail($this->wpPost);
-
-        return $this->setAttribute(__METHOD__, $hasPostThumbnail);
     }
 
     /**
@@ -319,6 +307,18 @@ class Post extends BaseModel
     }
 
     /**
+     * Test if password required for this post.
+     *
+     * @return bool
+     */
+    public function isPasswordRequired(): bool
+    {
+        $isPasswordRequired = post_password_required($this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $isPasswordRequired);
+    }
+
+    /**
      * Query posts by using the `WP_Query`.
      *
      * @param array $query The argument passed to `WP_Query` constructor.
@@ -327,12 +327,11 @@ class Post extends BaseModel
      */
     public static function query(array $query): QueryResults
     {
-        $postType = static::$postType;
         $defaultQuery = ['no_found_rows' => true];
         $query = array_merge($defaultQuery, $query);
 
-        if ($postType && ! isset($query['post_type'])) {
-            $query['post_type'] = $postType;
+        if ( ! isset($query['post_type'])) {
+            $query['post_type'] = static::POST_TYPE;
         }
 
         $wp_query_object = new WP_Query($query);
@@ -373,6 +372,20 @@ class Post extends BaseModel
     public static function all(array $query = []): QueryResults
     {
         return static::query(array_merge($query, ['nopaging' => true]));
+    }
+
+    /**
+     * Create many posts from array.
+     *
+     * @param array $posts
+     *
+     * @return Collection
+     */
+    public static function createManyFromArray(array $posts): Collection
+    {
+        return collect($posts)->map(function ($post) {
+            return new static($post);
+        });
     }
 
     /**

@@ -3,8 +3,9 @@
 namespace Laraish\WpSupport\Model;
 
 use WP_Term;
-use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use Illuminate\Support\Collection;
+use Laraish\WpSupport\Query\QueryResults;
 
 class Term extends BaseModel
 {
@@ -42,7 +43,7 @@ class Term extends BaseModel
      */
     public function wpTerm(): WP_Term
     {
-        return $this->setAttribute(__METHOD__, $this->wpTerm);
+        return $this->wpTerm;
     }
 
     /**
@@ -51,7 +52,7 @@ class Term extends BaseModel
      */
     public function name(): string
     {
-        return $this->setAttribute(__METHOD__, $this->wpTerm->name);
+        return $this->wpTerm->name;
     }
 
     /**
@@ -60,7 +61,7 @@ class Term extends BaseModel
      */
     public function slug(): string
     {
-        return $this->setAttribute(__METHOD__, $this->wpTerm->slug);
+        return $this->wpTerm->slug;
     }
 
     /**
@@ -69,7 +70,7 @@ class Term extends BaseModel
      */
     public function termId(): int
     {
-        return $this->setAttribute(__METHOD__, $this->wpTerm->term_id);
+        return $this->wpTerm->term_id;
     }
 
     /**
@@ -78,21 +79,34 @@ class Term extends BaseModel
      */
     public function termTaxonomyId(): int
     {
-        return $this->setAttribute(__METHOD__, $this->wpTerm->term_taxonomy_id);
+        return $this->wpTerm->term_taxonomy_id;
     }
 
     /**
-     * Check if this term is currently being displayed.
-     *
-     * @return bool
+     * Get the taxonomy of the term.
+     * @return string
      */
-    public function isQueried(): bool
+    public function taxonomy(): string
     {
-        $queried_object = get_queried_object();
+        return $this->wpTerm->taxonomy;
+    }
 
-        $isQueried = (isset($queried_object->term_taxonomy_id) AND $queried_object->term_taxonomy_id === $this->termTaxonomyId());
+    /**
+     * Get the description of the term.
+     * @return string
+     */
+    public function description(): string
+    {
+        return $this->wpTerm->description;
+    }
 
-        return $this->setAttribute(__METHOD__, $isQueried);
+    /**
+     * Get the count of the term.
+     * @return int
+     */
+    public function count(): int
+    {
+        return $this->wpTerm->count;
     }
 
     /**
@@ -161,6 +175,20 @@ class Term extends BaseModel
     }
 
     /**
+     * Check if this term is currently being displayed.
+     *
+     * @return bool
+     */
+    public function isQueried(): bool
+    {
+        $queried_object = get_queried_object();
+
+        $isQueried = (isset($queried_object->term_taxonomy_id) AND $queried_object->term_taxonomy_id === $this->termTaxonomyId());
+
+        return $this->setAttribute(__METHOD__, $isQueried);
+    }
+
+    /**
      * Test if this term is a descendant of the given term.
      *
      * @param WP_Term|static $term
@@ -175,7 +203,7 @@ class Term extends BaseModel
         $givenTerm = $term instanceof static ? $term->wpTerm() : $term;
         $myAncestors = $this->ancestors;
         $isDescendant = $myAncestors->search(function (Term $myAncestor) use ($givenTerm) {
-            return $givenTerm->term_id === $myAncestor->termId;
+            return $givenTerm->term_id === $myAncestor->termId();
         });
 
         return $isDescendant !== false;
@@ -187,6 +215,7 @@ class Term extends BaseModel
      * @param WP_Term|static $term
      *
      * @return bool
+     * @throws \InvalidArgumentException
      */
     public function isAncestorOf($term): bool
     {
@@ -195,7 +224,7 @@ class Term extends BaseModel
         $givenTerm = $term instanceof static ? $term : new static($term);
         $givenTermAncestors = $givenTerm->ancestors;
         $isAncestor = $givenTermAncestors->search(function (Term $givenPostAncestor) {
-            return $this->termId === $givenPostAncestor->termId;
+            return $this->termId() === $givenPostAncestor->termId();
         });
 
         return $isAncestor !== false;
@@ -211,10 +240,41 @@ class Term extends BaseModel
      */
     protected function checkArgumentType($value, $methodName): void
     {
-        if ( ! ($value instanceof static OR $value instanceof WP_Term)) {
+        if ( ! ($value instanceof static || $value instanceof WP_Term)) {
             $className = static::class;
             throw new InvalidArgumentException("`$methodName` only accepts `WP_Term | $className`.");
         }
+    }
+
+    /**
+     * Get the related posts for the given post type class.
+     *
+     * @param string $postClassName
+     * @param array $query
+     *
+     * @return QueryResults
+     * @throws \InvalidArgumentException
+     */
+    public function postsFor(string $postClassName, array $query = []): QueryResults
+    {
+        if ( ! ($postClassName === Post::class || is_subclass_of($postClassName, Post::class))) {
+            $baseClassName = Post::class;
+            throw new \InvalidArgumentException("The post class name must be a subclass of $baseClassName. `$postClassName` given.");
+        }
+
+        $query = array_merge($query, [
+            'tax_query' => [
+                [
+                    'taxonomy' => $this->taxonomy(),
+                    'field'    => 'term_taxonomy_id',
+                    'terms'    => $this->termTaxonomyId(),
+                ]
+            ]
+        ]);
+
+        $method = isset($query['posts_per_page']) ? 'all' : 'query';
+
+        return $postClassName::$method($query);
     }
 
     /**
