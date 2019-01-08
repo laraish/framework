@@ -15,7 +15,7 @@ abstract class BaseModel
      * The ACF fields
      * @var array
      */
-    protected $acfFields = [];
+    protected $acfFields;
 
     /**
      * Get an attribute from the model.
@@ -121,12 +121,12 @@ abstract class BaseModel
      */
     protected function getAttributeFromAcfFields(string $key)
     {
-        if (array_key_exists($key, $this->acfFields)) {
+        if (array_key_exists($key, (array)$this->acfFields)) {
             return $this->acfFields[$key];
         }
 
         if ($originalKey = $this->getOriginalKey($key)) {
-            if (array_key_exists($originalKey, $this->acfFields)) {
+            if (array_key_exists($originalKey, (array)$this->acfFields)) {
                 return strip_tags($this->acfFields[$originalKey]);
             }
         }
