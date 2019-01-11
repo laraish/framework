@@ -206,11 +206,11 @@ class Post extends BaseModel
     /**
      * Get the author object
      *
-     * @return Author
+     * @return User
      */
-    public function author(): Author
+    public function author(): User
     {
-        $author = new Author($this->wpPost->post_author);
+        $author = new User($this->wpPost->post_author);
 
         return $this->setAttribute(__METHOD__, $author);
     }

@@ -5,7 +5,7 @@ namespace Laraish\WpSupport\Model;
 use WP_User;
 use Illuminate\Support\Collection;
 
-class Author extends BaseModel
+class User extends BaseModel
 {
     /**
      * @type integer
