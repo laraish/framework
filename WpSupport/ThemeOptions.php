@@ -13,7 +13,7 @@ class ThemeOptions
      *
      * @param array $options
      */
-    public static function add_theme_support(array $options)
+    public static function add_theme_support(array $options): void
     {
         add_action('after_setup_theme', function () use ($options) {
             foreach ($options as $option) {
@@ -31,7 +31,7 @@ class ThemeOptions
      *
      * @param array $post_types
      */
-    public static function post_types(array $post_types)
+    public static function post_types(array $post_types): void
     {
         foreach ($post_types as $post_type) {
             PostType::register($post_type['name'], $post_type['slug'], $post_type['args']);
@@ -43,7 +43,7 @@ class ThemeOptions
      *
      * @param array $taxonomies
      */
-    public static function taxonomies(array $taxonomies)
+    public static function taxonomies(array $taxonomies): void
     {
         foreach ($taxonomies as $taxonomy) {
             Taxonomy::register($taxonomy['name'], $taxonomy['slug'], $taxonomy['object_type'], $taxonomy['args']);
@@ -56,7 +56,7 @@ class ThemeOptions
      *
      * @param array|string $options
      */
-    public static function thumbnail_hint_text($options)
+    public static function thumbnail_hint_text($options): void
     {
         add_filter('admin_post_thumbnail_html', function ($content) use ($options) {
             global $post_type;
@@ -78,10 +78,36 @@ class ThemeOptions
     }
 
     /**
+     * Add thumbnail column to the given post type.
+     *
+     * @param array $postTypes
+     */
+    public static function add_thumbnail_to_post_columns(array $postTypes): void
+    {
+        foreach ($postTypes as $postType) {
+            add_filter("manage_{$postType}_posts_columns", function ($defaults) {
+                $defaults['thumbnail'] = __('Thumbnail');
+
+                return $defaults;
+            }, 5);
+
+            add_action("manage_{$postType}_posts_custom_column", function ($columnName) {
+                if ($columnName === 'thumbnail') {
+                    the_post_thumbnail('medium', ['style' => 'width:100%; max-width:100px; height:auto;']);
+                }
+            }, 5, 2);
+
+            add_action('admin_head', function () {
+                echo '<style>.column-thumbnail { width: 10%; }</style>';
+            });
+        }
+    }
+
+    /**
      *
      * @param array $options
      */
-    public static function title_placeholder(array $options)
+    public static function title_placeholder(array $options): void
     {
         add_filter('enter_title_here', function ($title) use ($options) {
             global $post_type;
@@ -97,12 +123,11 @@ class ThemeOptions
         });
     }
 
-
     /**
      *
      * @param array|string $menus
      */
-    public static function remove_menu_page($menus)
+    public static function remove_menu_page($menus): void
     {
         add_action('admin_menu', function () use ($menus) {
             if (is_array($menus)) {
@@ -115,7 +140,7 @@ class ThemeOptions
         });
     }
 
-    public static function remove_version($remove)
+    public static function remove_version($remove): void
     {
         if ($remove) {
             add_filter('the_generator', function () {
@@ -128,7 +153,7 @@ class ThemeOptions
      *
      * @param string $filepath
      */
-    public static function editor_styles($filepath)
+    public static function editor_styles($filepath): void
     {
         add_editor_style($filepath);
     }
@@ -137,7 +162,7 @@ class ThemeOptions
      *
      * @param string $excerpt_more_string
      */
-    public static function excerpt_more($excerpt_more_string)
+    public static function excerpt_more($excerpt_more_string): void
     {
         add_filter('excerpt_more', function ($more) use ($excerpt_more_string) {
             return $excerpt_more_string;
@@ -149,14 +174,14 @@ class ThemeOptions
      *
      * @param integer $new_length
      */
-    public static function excerpt_length($new_length)
+    public static function excerpt_length($new_length): void
     {
         add_filter('excerpt_length', function ($length) use ($new_length) {
             return $new_length;
         });
     }
 
-    public static function image_sizes($image_sizes)
+    public static function image_sizes($image_sizes): void
     {
         add_theme_support('post-thumbnails');
         foreach ($image_sizes as $image_size) {
@@ -169,7 +194,7 @@ class ThemeOptions
      *
      * @param array $templates
      */
-    public static function page_templates(array $templates)
+    public static function page_templates(array $templates): void
     {
         foreach ($templates as $template) {
             if (isset($template['post'])) {
@@ -178,7 +203,7 @@ class ThemeOptions
                     add_filter("theme_{$post->post_type}_templates", function ($post_templates, $wp_theme, $post_being_edited) use ($template, $post) {
                         $post_being_edited = $post_being_edited ?? get_post();
                         if ($post_being_edited instanceof WP_Post AND (int)$post_being_edited->ID === $post->id()) {
-                            $templateName                  = $templatePath = $template['name'];
+                            $templateName = $templatePath = $template['name'];
                             $post_templates[$templatePath] = $templateName;
                         }
 
@@ -190,7 +215,7 @@ class ThemeOptions
             if (isset($template['post_type'])) {
                 foreach ((array)$template['post_type'] as $post_type) {
                     add_filter("theme_{$post_type}_templates", function ($post_templates) use ($template) {
-                        $templateName                  = $templatePath = $template['name'];
+                        $templateName = $templatePath = $template['name'];
                         $post_templates[$templatePath] = $templateName;
 
                         return $post_templates;
@@ -205,7 +230,7 @@ class ThemeOptions
      *
      * @param array $options
      */
-    public static function admin_page_assets(array $options)
+    public static function admin_page_assets(array $options): void
     {
         add_action('admin_enqueue_scripts', function ($hook) use ($options) {
             $defaults = [
@@ -266,7 +291,7 @@ class ThemeOptions
      *
      * @param array $menus
      */
-    public static function menus(array $menus)
+    public static function menus(array $menus): void
     {
         add_action('init', function () use ($menus) {
             register_nav_menus($menus);
