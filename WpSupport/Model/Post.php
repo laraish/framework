@@ -236,7 +236,7 @@ class Post extends BaseModel
      */
     public function children(): Collection
     {
-        $children = static::query(['post_parent' => $this->id()]);
+        $children = static::all(['post_parent' => $this->id()]);
 
         return $this->setAttribute(__METHOD__, $children);
     }
@@ -340,7 +340,7 @@ class Post extends BaseModel
             return new static($post);
         }, $wp_query_object->posts);
 
-        return new QueryResults($posts, $wp_query_object);
+        return QueryResults::create($posts, $wp_query_object);
     }
 
     /**
@@ -359,7 +359,7 @@ class Post extends BaseModel
             }, (array)$wp_query->posts);
         }
 
-        return new QueryResults($posts, $wp_query);
+        return QueryResults::create($posts, $wp_query);
     }
 
     /**

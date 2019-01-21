@@ -16,16 +16,16 @@ class QueryResults extends Collection
     protected $wp_query;
 
     /**
-     * QueryResults constructor.
-     *
      * @param array $items
      * @param WP_Query $wp_query
+     *
+     * @return static
      */
-    public function __construct(array $items, WP_Query $wp_query)
+    public static function create(array $items, WP_Query $wp_query): self
     {
-        parent::__construct($items);
+        $instance = new static($items);
 
-        $this->wp_query = $wp_query;
+        return $instance->setWpQuery($wp_query);
     }
 
     /**
@@ -43,6 +43,18 @@ class QueryResults extends Collection
         $currentPage = (int)$wp_query->query_vars['paged'];
 
         return new Paginator($total, $perPage, $currentPage, $options);
+    }
+
+    /**
+     * @param WP_Query $wp_query
+     *
+     * @return $this
+     */
+    public function setWpQuery(WP_Query $wp_query): self
+    {
+        $this->wp_query = $wp_query;
+
+        return $this;
     }
 
     /**
