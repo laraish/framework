@@ -232,11 +232,14 @@ class Post extends BaseModel
 
     /**
      * Get the children of this post.
+     *
+     * @param array $query
+     *
      * @return Collection
      */
-    public function children(): Collection
+    public function children(array $query = []): Collection
     {
-        $children = static::all(['post_parent' => $this->id()]);
+        $children = static::all(array_merge($query, ['post_parent' => $this->id()]));
 
         return $this->setAttribute(__METHOD__, $children);
     }
