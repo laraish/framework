@@ -219,7 +219,7 @@ class Post extends BaseModel
      * Get the parent of this post.
      * @return static|null
      */
-    public function parent()
+    public function parent(): ?self
     {
         $parent = null;
 

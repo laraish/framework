@@ -2,25 +2,46 @@
 
 namespace Laraish\WpSupport\Model;
 
+use WP_Term;
 use WP_Term_Query;
 use Illuminate\Support\Collection;
 
 class Taxonomy extends BaseModel
 {
     /**
-     * The taxonomy name
+     * The taxonomy name.
      * @type string
      */
     protected $name;
 
     /**
+     * The term class name to be used.
+     * @type string
+     */
+    protected $termClass;
+
+    /**
      * Taxonomy constructor.
      *
      * @param string $name
+     * @param string $termClass
      */
-    public function __construct(string $name)
+    public function __construct(string $name, string $termClass = Term::class)
     {
         $this->name = $name;
+        $this->termClass = $termClass;
+    }
+
+    /**
+     * @param WP_Term $term
+     *
+     * @return Term
+     */
+    protected function createTerm(WP_Term $term): Term
+    {
+        $class = $this->termClass;
+
+        return new $class($term);
     }
 
     /**
@@ -35,7 +56,7 @@ class Taxonomy extends BaseModel
         $theTerms = get_the_terms($post instanceof Post ? $post->wpPost() : $post, $this->name);
         if (\is_array($theTerms)) {
             $theTerms = array_map(function ($term) {
-                return new Term($term);
+                return $this->createTerm($term);
             }, $theTerms);
         } else {
             $theTerms = [];
@@ -56,7 +77,7 @@ class Taxonomy extends BaseModel
         $args = array_merge(['taxonomy' => $this->name], $args);
 
         $terms = array_map(function ($term) {
-            return new Term($term);
+            return $this->createTerm($term);
         }, get_terms($args));
 
         return $this->setAttribute(__METHOD__, new Collection($terms));
@@ -77,7 +98,7 @@ class Taxonomy extends BaseModel
             return null;
         }
 
-        return $this->setAttribute(__METHOD__, new Term($term));
+        return $this->setAttribute(__METHOD__, $this->createTerm($term));
     }
 
     /**
@@ -96,7 +117,7 @@ class Taxonomy extends BaseModel
         $rootTermSlug = $slugHierarchy[0];
         $descendantTermSlugs = \array_slice($slugHierarchy, 1);
         $parentTerm = get_term_by('slug', $rootTermSlug, $taxonomyName);
-        $terms = [new Term($parentTerm)];
+        $terms = [$this->createTerm($parentTerm)];
 
         foreach ($descendantTermSlugs as $childrenCategorySlug) {
             $query = new WP_Term_Query([
@@ -108,7 +129,7 @@ class Taxonomy extends BaseModel
             $queriedTerms = $query->get_terms();
             if ($queriedTerms) {
                 $term = $queriedTerms[0];
-                $terms[] = new Term($term);
+                $terms[] = $this->createTerm($term);
                 $parentTerm = $term;
             }
         }
