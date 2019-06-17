@@ -283,7 +283,7 @@ class Term extends BaseModel
      * @param bool $single
      * @return mixed
      */
-    public function meta(string $key = '', bool $single = false)
+    public function meta(string $key = '', bool $single = true)
     {
         return get_term_meta($this->termId(), $key, $single);
     }
