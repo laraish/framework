@@ -30,7 +30,7 @@ class Term extends BaseModel
      */
     public function resolveAcfFields()
     {
-        if ( ! \function_exists('get_fields')) {
+        if (!\function_exists('get_fields')) {
             return [];
         }
 
@@ -127,7 +127,7 @@ class Term extends BaseModel
     public function parent(): ?self
     {
         $parentId = $this->wpTerm->parent;
-        if ( ! $parentId) {
+        if (!$parentId) {
             return null;
         }
 
@@ -162,7 +162,7 @@ class Term extends BaseModel
     {
         $ancestors = [];
         $term = $this->wpTerm;
-        while ( ! is_wp_error($term) AND ! empty($term->parent)) {
+        while (!is_wp_error($term) AND !empty($term->parent)) {
             $ancestors[] = $term = get_term($term->parent, $this->wpTerm->taxonomy);
         }
 
@@ -240,7 +240,7 @@ class Term extends BaseModel
      */
     protected function checkArgumentType($value, $methodName): void
     {
-        if ( ! ($value instanceof static || $value instanceof WP_Term)) {
+        if (!($value instanceof static || $value instanceof WP_Term)) {
             $className = static::class;
             throw new InvalidArgumentException("`$methodName` only accepts `WP_Term | $className`.");
         }
@@ -257,7 +257,7 @@ class Term extends BaseModel
      */
     public function postsFor(string $postClassName, array $query = []): QueryResults
     {
-        if ( ! ($postClassName === Post::class || is_subclass_of($postClassName, Post::class))) {
+        if (!($postClassName === Post::class || is_subclass_of($postClassName, Post::class))) {
             $baseClassName = Post::class;
             throw new \InvalidArgumentException("The post class name must be a subclass of $baseClassName. `$postClassName` given.");
         }
@@ -266,8 +266,8 @@ class Term extends BaseModel
             'tax_query' => [
                 [
                     'taxonomy' => $this->taxonomy(),
-                    'field'    => 'term_taxonomy_id',
-                    'terms'    => $this->termTaxonomyId(),
+                    'field' => 'term_taxonomy_id',
+                    'terms' => $this->termTaxonomyId(),
                 ]
             ]
         ]);
@@ -278,9 +278,20 @@ class Term extends BaseModel
     }
 
     /**
+     * Retrieves metadata for a term.
+     * @param string $key
+     * @param bool $single
+     * @return mixed
+     */
+    public function meta(string $key = '', bool $single = false)
+    {
+        return get_term_meta($this->termId(), $key, $single);
+    }
+
+    /**
      * Dynamically retrieve property on the original WP_Term object.
      *
-     * @param  string $key
+     * @param string $key
      *
      * @return mixed
      */
@@ -289,7 +300,7 @@ class Term extends BaseModel
         $value = parent::__get($key);
 
         if (null === $value) {
-            $value = $this->wpTerm->$key ?? null;
+            $value = $this->wpTerm->$key ?? $this->meta($key) ?? null;
         }
 
         return $value;
