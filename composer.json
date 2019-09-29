@@ -21,10 +21,10 @@
     "require": {
         "php": "^7.2",
         "laravel/framework": "^6.0",
-        "laraish/contracts": "0.3.*",
-        "laraish/support": "0.3.*",
-        "laraish/pagination": "0.3.*",
-        "laraish/options": "0.3.*"
+        "laraish/contracts": "^0.3",
+        "laraish/support": "^0.3",
+        "laraish/pagination": "^0.3",
+        "laraish/options": "^0.3"
     },
     "autoload": {
         "files": [
