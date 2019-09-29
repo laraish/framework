@@ -77,7 +77,7 @@ class Kernel extends HttpKernel
                 $response = $this->renderException($request, $e);
             }
 
-            $this->app['events']->fire('kernel.handled', [$request, $response]);
+            $this->app['events']->dispatch('kernel.handled', [$request, $response]);
 
             return $template;
         }, PHP_INT_MAX);
