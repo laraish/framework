@@ -9,6 +9,11 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     /**
+     * @var bool Flag to determine if load wordpress plugins.
+     */
+    protected $loadWordpressPlugins = false;
+
+    /**
      * Create a new console kernel instance.
      *
      * @param  \Illuminate\Contracts\Foundation\Application $app
@@ -31,7 +36,9 @@ class Kernel extends ConsoleKernel
         }
 
         // Prevent from loading plugins (it could be error-prone if load plugins).
-        define('WP_PLUGIN_DIR', '/NULL');
+        if ($this->loadWordpressPlugins === false) {
+            define('WP_PLUGIN_DIR', '/NULL');
+        }
 
         $wp_load = realpath($app->basePath() . '/../../../wp-load.php');
 
