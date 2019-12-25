@@ -4,10 +4,11 @@ namespace Laraish\Foundation\Http;
 
 use Exception;
 use Throwable;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Events\RequestHandled;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 class Kernel extends HttpKernel
 {
@@ -33,9 +34,8 @@ class Kernel extends HttpKernel
     /**
      * Send the given request through the middleware / router.
      *
-     * @param  \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\Response
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response|void
      */
     protected function sendRequestThroughRouter($request)
     {
@@ -77,7 +77,9 @@ class Kernel extends HttpKernel
                 $response = $this->renderException($request, $e);
             }
 
-            $this->app['events']->dispatch('kernel.handled', [$request, $response]);
+            $this->app['events']->dispatch(
+                new RequestHandled($request, $response)
+            );
 
             return $template;
         }, PHP_INT_MAX);
