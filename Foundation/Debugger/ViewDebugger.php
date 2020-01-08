@@ -3,6 +3,7 @@
 namespace Laraish\Foundation\Debugger;
 
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Route;
 
 trait ViewDebugger
 {
@@ -26,10 +27,12 @@ trait ViewDebugger
         }
 
         $debugInfo = json_encode([
-            'view_path'     => $view->getPath(),
+            'view_path' => $view->getPath(),
             'compiled_path' => get_compiled_path($view),
-            'data'          => $view->getData(),
-            'controller'    => get_class($this)
+            'data' => $view->getData(),
+            'action' => Route::currentRouteAction(),
+            'route_name' => Route::currentRouteName(),
+            'middleware' => Route::current()->computedMiddleware,
         ]);
 
         $script = "<script>console.log('view-debugger',$debugInfo)</script>";
