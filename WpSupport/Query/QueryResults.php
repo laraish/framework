@@ -65,4 +65,13 @@ class QueryResults extends Collection
     {
         return $this->wp_query;
     }
+
+    /**
+     * All found posts count.
+     * @return int
+     */
+    public function countAll()
+    {
+        return $this->wp_query->found_posts;
+    }
 }
