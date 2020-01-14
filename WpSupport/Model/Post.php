@@ -44,7 +44,7 @@ class Post extends BaseModel
      */
     public function resolveAcfFields()
     {
-        if ( ! \function_exists('get_fields')) {
+        if (!\function_exists('get_fields')) {
             return [];
         }
 
@@ -96,7 +96,7 @@ class Post extends BaseModel
     /**
      * Get the post thumbnail.
      *
-     * @param string $size           The thumbnail size.
+     * @param string $size The thumbnail size.
      * @param string $imgPlaceHolder The URL of the placeholder image.
      *
      * @return object
@@ -107,8 +107,8 @@ class Post extends BaseModel
         $thumbnail = wp_get_attachment_image_src(get_post_thumbnail_id($this->wpPost), $size);
         if ($thumbnail) {
             $thumbnailObject = (object)[
-                'url'    => $thumbnail[0],
-                'width'  => $thumbnail[1],
+                'url' => $thumbnail[0],
+                'width' => $thumbnail[1],
                 'height' => $thumbnail[2]
             ];
         } else if ($imgPlaceHolder) {
@@ -251,7 +251,7 @@ class Post extends BaseModel
     public function ancestors(): Collection
     {
         $post = $this->wpPost;
-        if ( ! $post->post_parent) {
+        if (!$post->post_parent) {
             return new Collection(); // do not have any ancestors
         }
 
@@ -321,6 +321,60 @@ class Post extends BaseModel
         return $this->setAttribute(__METHOD__, $isPasswordRequired);
     }
 
+
+    /**
+     * Updates the post meta field.
+     *
+     * @param string $meta_key
+     * @param mixed $meta_value
+     * @param mixed $prev_value
+     * @return $this
+     */
+    public function updateMeta(string $meta_key, $meta_value, $prev_value = ''): self
+    {
+        update_post_meta($this->id, $meta_key, $meta_value, $prev_value);
+
+        return $this;
+    }
+
+    /**
+     * Retrieves a post meta field for the post.
+     *
+     * @param string $key
+     * @param bool $single
+     * @return mixed
+     */
+    public function getMeta(string $key = '', bool $single = false)
+    {
+        return get_post_meta($key, $single);
+    }
+
+    /**
+     * Sets the post thumbnail (featured image) for the post.
+     *
+     * @param int $thumbnailId
+     * @return $this
+     */
+    public function setThumbnail(int $thumbnailId): self
+    {
+        set_post_thumbnail($this->id, $thumbnailId);
+
+        return $this;
+    }
+
+    /**
+     * Retrieves the edit post link for post.
+     *
+     * @param string $context How to output the '&' character. Default '&'.
+     * @return string
+     */
+    public function editPostUrl($context = 'display'): string
+    {
+        $editPostUrl = get_edit_post_link($this->wpPost, $context);
+
+        return $this->setAttribute(__METHOD__, $editPostUrl);
+    }
+
     /**
      * Query posts by using the `WP_Query`.
      *
@@ -333,7 +387,7 @@ class Post extends BaseModel
         $defaultQuery = ['no_found_rows' => true];
         $query = array_merge($defaultQuery, $query);
 
-        if ( ! isset($query['post_type'])) {
+        if (!isset($query['post_type'])) {
             $query['post_type'] = static::POST_TYPE;
         }
 
@@ -394,7 +448,7 @@ class Post extends BaseModel
     /**
      * Dynamically retrieve property on the original WP_Post object.
      *
-     * @param  string $key
+     * @param string $key
      *
      * @return mixed
      */
