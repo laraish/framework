@@ -376,6 +376,56 @@ class Post extends BaseModel
     }
 
     /**
+     * Update the post with given attributes.
+     *
+     * @param array $attributes
+     * @return true
+     * @throws \WP_Error
+     */
+    public function update(array $attributes): bool
+    {
+        $attributes['ID'] = $this->id;
+        $result = wp_update_post($attributes, true);
+
+        if ($result instanceof \WP_Error) {
+            throw $result;
+        }
+
+        return true;
+    }
+
+    /**
+     * Delete the post.
+     *
+     * @param bool $forceDelete
+     * @return bool
+     */
+    public function delete(bool $forceDelete = false): bool
+    {
+        $result = wp_delete_post($this->id, $forceDelete);
+
+        return $result instanceof \WP_Post;
+    }
+
+    /**
+     * Publish the post.
+     * @return bool
+     */
+    public function publish(): bool
+    {
+        return $this->update(['post_status' => 'publish']);
+    }
+
+    /**
+     * Get the post's status.
+     * @return string
+     */
+    public function status(): string
+    {
+        return $this->wpPost->post_status;
+    }
+
+    /**
      * Query posts by using the `WP_Query`.
      *
      * @param array $query The argument passed to `WP_Query` constructor.
@@ -429,6 +479,24 @@ class Post extends BaseModel
     public static function all(array $query = []): QueryResults
     {
         return static::query(array_merge($query, ['nopaging' => true]));
+    }
+
+    /**
+     * Insert or update a post.
+     *
+     * @param array $attributes
+     * @return static
+     * @throws \WP_Error
+     */
+    public static function create(array $attributes): self
+    {
+        $result = wp_insert_post($attributes, true);
+
+        if ($result instanceof \WP_Error) {
+            throw $result;
+        }
+
+        return new static($result);
     }
 
     /**
