@@ -2,8 +2,9 @@
 
 namespace Laraish\WpSupport;
 
-use Laraish\WpSupport\Model\Post;
 use WP_Post;
+use Laraish\Helper;
+use Laraish\WpSupport\Model\Post;
 
 class ThemeOptions
 {
@@ -297,4 +298,62 @@ class ThemeOptions
             register_nav_menus($menus);
         });
     }
+
+    /**
+     * Format value got from ACF.
+     * Value can be a class name or a closure which returns the class name.
+     * @param array $options
+     */
+    public static function format_acf_value(array $options): void
+    {
+        $postClass = $options['post'] ?? null;
+        $termClass = $options['term'] ?? null;
+        $userClass = $options['user'] ?? null;
+        $assocArrayToObject = $options['assoc_array_to_object'] ?? false;
+
+        add_filter('acf/format_value', function ($value, $post_id, $field) use ($termClass, $userClass, $assocArrayToObject, $postClass) {
+            if ($postClass && $value instanceof \WP_Post) {
+                $modelClassName = $postClass instanceof \Closure ? $postClass($value) : $postClass;
+                return new $modelClassName($value);
+            }
+
+            if ($termClass && $value instanceof \WP_Term) {
+                $modelClassName = $termClass instanceof \Closure ? $termClass($value) : $termClass;
+                return new $modelClassName($value);
+            }
+
+            if ($userClass && $value instanceof \WP_User) {
+                $modelClassName = $userClass instanceof \Closure ? $userClass($value) : $userClass;
+                return new $modelClassName($value);
+            }
+
+            if ($postClass && Helper::isArrayOfType($value, \WP_Post::class)) {
+                return array_map(function (\WP_Post $post) use ($postClass) {
+                    $modelClassName = $postClass instanceof \Closure ? $postClass($post) : $postClass;
+                    return new $modelClassName($post);
+                }, $value);
+            }
+
+            if ($termClass && Helper::isArrayOfType($value, \WP_Term::class)) {
+                return array_map(function (\WP_Term $term) use ($termClass) {
+                    $modelClassName = $termClass instanceof \Closure ? $termClass($term) : $termClass;
+                    return new $modelClassName($term);
+                }, $value);
+            }
+
+            if ($userClass && Helper::isArrayOfType($value, \WP_User::class)) {
+                return array_map(function (\WP_User $user) use ($userClass) {
+                    $modelClassName = $userClass instanceof \Closure ? $userClass($user) : $userClass;
+                    return new $modelClassName($user);
+                }, $value);
+            }
+
+            if ($assocArrayToObject && is_array($value)) {
+                return Helper::arrayToObject($value);
+            }
+
+            return $value;
+        }, 20, 3);
+    }
+
 }

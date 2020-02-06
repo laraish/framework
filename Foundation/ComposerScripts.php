@@ -24,7 +24,7 @@ class ComposerScripts
 
         $content = file_get_contents($helpersPath);
         $content = str_replace("function_exists('__')", "function_exists('___')", $content);
-        $content = str_replace('function __', 'function ___', $content);
+        $content = str_replace('function __(', 'function ___(', $content);
         file_put_contents($helpersPath, $content);
     }
 }
