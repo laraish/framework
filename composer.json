@@ -28,10 +28,14 @@
     },
     "autoload": {
         "files": [
-            "Foundation/helpers.php"
+            "src/helpers.php"
         ],
         "psr-4": {
-            "Laraish\\": "./"
+            "Laraish\\": "src/"
         }
+    },
+    "require-dev": {
+        "szepeviktor/phpstan-wordpress": "^0.6.0",
+        "composer/composer": "^1.10"
     }
 }

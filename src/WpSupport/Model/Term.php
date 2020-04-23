@@ -10,16 +10,16 @@ use Laraish\WpSupport\Query\QueryResults;
 class Term extends BaseModel
 {
     /**
-     * @var \WP_Term
+     * @var WP_Term
      */
     protected $wpTerm;
 
     /**
      * Term constructor.
      *
-     * @param \WP_Term $term
+     * @param WP_Term $term
      */
-    public function __construct(\WP_Term $term)
+    public function __construct(WP_Term $term)
     {
         $this->wpTerm = $term;
     }
