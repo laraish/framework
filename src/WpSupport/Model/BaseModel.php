@@ -147,8 +147,8 @@ abstract class BaseModel
     /**
      * Store arbitrary data to the $attribute array.
      *
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
      *
      * @return mixed
      */

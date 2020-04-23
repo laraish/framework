@@ -19,12 +19,12 @@ class Post extends BaseModel
 
     /**
      * The post id
-     * @type integer
+     * @var integer
      */
     protected $id;
 
     /**
-     * @type WP_Post
+     * @var WP_Post
      */
     protected $wpPost;
 
@@ -294,7 +294,7 @@ class Post extends BaseModel
     /**
      * Test if this post is a ancestor of the given post.
      *
-     * @param $post
+     * @param Post|int|WP_Post|null $post
      *
      * @return bool
      */

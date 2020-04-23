@@ -19,7 +19,7 @@ trait ViewDebugger
      */
     protected function view($view = null, $data = [], $mergeData = [])
     {
-        /** @type View $view */
+        /** @var View $view */
         $viewObject = is_array($view) ? view()->first($view, $data, $mergeData) : view($view, $data, $mergeData);
 
         if (app()->environment('production')) {

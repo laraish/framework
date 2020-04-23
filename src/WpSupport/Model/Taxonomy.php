@@ -10,13 +10,13 @@ class Taxonomy extends BaseModel
 {
     /**
      * The taxonomy name.
-     * @type string
+     * @var string
      */
     protected $name;
 
     /**
      * The term class name to be used.
-     * @type string
+     * @var string
      */
     protected $termClass;
 
@@ -86,8 +86,8 @@ class Taxonomy extends BaseModel
     /**
      * Get all Term data from database by Term field and data.
      *
-     * @param $field
-     * @param $value
+     * @param string $field
+     * @param mixed $value
      *
      * @return null|Term
      */

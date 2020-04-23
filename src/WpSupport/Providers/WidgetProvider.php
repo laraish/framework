@@ -8,21 +8,21 @@ class WidgetProvider extends ServiceProvider
 {
     /**
      * Array of Class names that will be passed to `register_widget()`
-     * @type array
+     * @var array
      */
     protected $widgets = [];
 
     /**
      * Array of arguments(array) passed to `register_sidebar()`
      * Usually you should give something like [ 'name' => 'Nice Sidebar', 'id' => 'nice_sidebar']
-     * @type array
+     * @var array
      */
     protected $widgetAreas = [];
 
     /**
      * Very often you'd like to remove the default widgets supplied by WordPress
      * Here you can list up the widgets those you want to remove
-     * @type array
+     * @var array
      */
     protected $unregisterWidgets = [
         'WP_Widget_Pages',

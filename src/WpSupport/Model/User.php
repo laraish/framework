@@ -8,12 +8,12 @@ use Illuminate\Support\Collection;
 class User extends BaseModel
 {
     /**
-     * @type integer
+     * @var integer
      */
     protected $id;
 
     /**
-     * @type \WP_User
+     * @var \WP_User
      */
     protected $wpUser;
 
@@ -64,11 +64,11 @@ class User extends BaseModel
      */
     public function resolveAcfFields()
     {
-        if ( ! \function_exists('get_fields')) {
+        if ( ! \function_exists('\get_fields')) {
             return [];
         }
 
-        return get_fields($this->wpUser);
+        return \get_fields($this->wpUser);
     }
 
 

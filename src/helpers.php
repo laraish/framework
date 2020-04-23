@@ -53,9 +53,9 @@ if ( ! function_exists('get_compiled_path')) {
      */
     function get_compiled_path(View $view)
     {
-        /** @type CompilerEngine $engine */
+        /** @var CompilerEngine $engine */
         $engine = $view->getEngine();
-        /** @type BladeCompiler $compiler */
+        /** @var BladeCompiler $compiler */
         $compiler = $engine->getCompiler();
         $path     = $view->getPath();
         if ($compiler->isExpired($path)) {
