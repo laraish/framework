@@ -47,7 +47,7 @@ class ThemeOptions
     public static function taxonomies(array $taxonomies): void
     {
         foreach ($taxonomies as $taxonomy) {
-            Taxonomy::register($taxonomy['name'], $taxonomy['slug'], $taxonomy['object_type'], $taxonomy['args']);
+            Taxonomy::register($taxonomy['name'], $taxonomy['slug'], $taxonomy['object_type'], $taxonomy['args'] ?? []);
         }
     }
 
