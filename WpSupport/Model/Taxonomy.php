@@ -149,6 +149,30 @@ class Taxonomy extends BaseModel
     }
 
     /**
+     * Add a new term to the database.
+     *
+     * @param string $term
+     * @param array $args
+     * @return array|int[]|\WP_Error
+     */
+    public function insertTerm(string $term, $args = [])
+    {
+        return wp_insert_term($term, $this->name, $args);
+    }
+
+    /**
+     * Removes a term from the database.
+     *
+     * @param int $term
+     * @param array $args
+     * @return array|bool|int|object|\WP_Error|WP_Term|null
+     */
+    public function deleteTerm(int $term, $args = [])
+    {
+        return wp_delete_term($term, $this->name, $args);
+    }
+
+    /**
      * Get slug hierarchy by a term.
      *
      * @param Term $term
