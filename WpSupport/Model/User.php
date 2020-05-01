@@ -29,8 +29,8 @@ class User extends BaseModel
 
         if (null !== $id) {
             if ($id instanceof WP_User) {
-                $id = $id->ID;
                 $wpUser = $id;
+                $id = $wpUser->ID;
             } elseif (is_numeric($id)) {
                 $id = (int)$id;
                 $wpUser = new WP_User($id);
