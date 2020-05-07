@@ -21,15 +21,31 @@ class Taxonomy extends BaseModel
     protected $termClass;
 
     /**
+     * The default term class to be used to create new instances.
+     * @type string
+     */
+    static protected $defaultTermClass = Term::class;
+
+    /**
+     * Set the default term class to be used to create new instances.
+     *
+     * @param string $termClass
+     */
+    static public function setDefaultTermClass(string $termClass)
+    {
+        static::$defaultTermClass = $termClass;
+    }
+
+    /**
      * Taxonomy constructor.
      *
      * @param string $name
-     * @param string $termClass
+     * @param string|null $termClass
      */
-    public function __construct(string $name, string $termClass = Term::class)
+    public function __construct(string $name, string $termClass = null)
     {
         $this->name = $name;
-        $this->termClass = $termClass;
+        $this->termClass = $termClass ?? static::$defaultTermClass;
     }
 
     /**
@@ -94,7 +110,7 @@ class Taxonomy extends BaseModel
     public function getTermBy($field, $value): ?Term
     {
         $term = get_term_by($field, $value, $this->name);
-        if ( ! $term) {
+        if (!$term) {
             return null;
         }
 
@@ -122,8 +138,8 @@ class Taxonomy extends BaseModel
         foreach ($descendantTermSlugs as $childrenCategorySlug) {
             $query = new WP_Term_Query([
                 'taxonomy' => $taxonomyName,
-                'slug'     => $childrenCategorySlug,
-                'parent'   => $parentTerm->term_id
+                'slug' => $childrenCategorySlug,
+                'parent' => $parentTerm->term_id
             ]);
 
             $queriedTerms = $query->get_terms();
