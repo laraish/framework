@@ -349,7 +349,7 @@ class ThemeOptions
             }
 
             if ($assocArrayToObject && is_array($value)) {
-                return Helper::arrayToObject($value);
+                return Helper::arrayToObject($value, true);
             }
 
             return $value;

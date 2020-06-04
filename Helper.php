@@ -27,7 +27,7 @@ class Helper
         $obj = new \stdClass;
         foreach ($array as $key => $value) {
             if ($snakeCaseKey) {
-                $key = Str::snake($key);
+                $key = str_replace('-', '_', Str::snake($key));
             }
             if (is_array($value)) {
                 $obj->{$key} = static::arrayToObject($value);
