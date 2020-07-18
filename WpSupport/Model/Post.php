@@ -182,9 +182,9 @@ class Post extends BaseModel
      *
      * @return mixed
      */
-    public function date($format = '')
+    public function date($format = null)
     {
-        $date = get_post_time($format ?: get_option('date_format'), false, $this->wpPost, true);
+        $date = get_post_time($format ?? get_option('date_format'), false, $this->wpPost, true);
 
         return $this->setAttribute(__METHOD__, $date);
     }
@@ -196,9 +196,53 @@ class Post extends BaseModel
      *
      * @return mixed
      */
-    public function time($format = '')
+    public function time($format = null)
     {
-        $time = get_post_time($format ?: get_option('time_format'), false, $this->wpPost, true);
+        $time = get_post_time($format ?? get_option('time_format'), false, $this->wpPost, true);
+
+        return $this->setAttribute(__METHOD__, $time);
+    }
+
+
+    /**
+     * The modified date and time of this post.
+     * This is supposed to be used for the `datetime` attribute of `time` element.
+     *
+     * @param string $format
+     *
+     * @return false|int|string
+     */
+    public function modifiedDateTime($format = DateTime::RFC3339)
+    {
+        $dateTime = get_post_modified_time($format, false, $this->wpPost);
+
+        return $this->setAttribute(__METHOD__, $dateTime);
+    }
+
+    /**
+     * Get the formatted modified post date.
+     *
+     * @param string $format
+     *
+     * @return mixed
+     */
+    public function modifiedDate($format = null)
+    {
+        $date = get_post_modified_time($format ?: get_option('date_format'), false, $this->wpPost, true);
+
+        return $this->setAttribute(__METHOD__, $date);
+    }
+
+    /**
+     * Get the formatted modified post time.
+     *
+     * @param string $format
+     *
+     * @return mixed
+     */
+    public function modifiedTime($format = null)
+    {
+        $time = get_post_modified_time($format ?: get_option('time_format'), false, $this->wpPost, true);
 
         return $this->setAttribute(__METHOD__, $time);
     }
