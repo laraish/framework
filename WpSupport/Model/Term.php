@@ -10,6 +10,11 @@ use Laraish\WpSupport\Query\QueryResults;
 class Term extends BaseModel
 {
     /**
+     * @var null|string|array
+     */
+    public const TAXONOMY = null;
+
+    /**
      * @var WP_Term
      */
     protected $wpTerm;
@@ -304,5 +309,30 @@ class Term extends BaseModel
         }
 
         return $value;
+    }
+
+    /**
+     * Get all the terms.
+     *
+     * @return Collection
+     */
+    public static function all(): Collection
+    {
+        return static::query();
+    }
+
+    /**
+     * Query the terms.
+     *
+     * @param array $query
+     * @return Collection
+     */
+    public static function query(array $query = []): Collection
+    {
+        $terms = array_map(function ($term) {
+            return new static($term);
+        }, get_terms($query + ['taxonomy' => static::TAXONOMY]));
+
+        return new Collection($terms);
     }
 }
