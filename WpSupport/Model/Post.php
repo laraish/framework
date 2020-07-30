@@ -151,9 +151,11 @@ class Post extends BaseModel
      *
      * @return string
      */
-    public function content(): string
+    public function content($moreLinkText = null, $stripTeaser = false): string
     {
-        $content = get_the_content(null, false, $this->wpPost);
+        $content = get_the_content($moreLinkText, $stripTeaser, $this->wpPost);
+        $content = apply_filters('the_content', $content);
+        $content = str_replace(']]>', ']]&gt;', $content);
 
         return $this->setAttribute(__METHOD__, $content);
     }
