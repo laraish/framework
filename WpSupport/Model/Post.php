@@ -153,7 +153,7 @@ class Post extends BaseModel
      */
     public function content(): string
     {
-        $content = apply_filters( 'the_content', $this->wpPost->post_content );
+        $content = get_the_content(null, false, $this->wpPost);
 
         return $this->setAttribute(__METHOD__, $content);
     }
