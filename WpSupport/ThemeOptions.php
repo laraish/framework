@@ -141,7 +141,7 @@ class ThemeOptions
         });
     }
 
-    public static function remove_version($remove): void
+    public static function remove_version(bool $remove): void
     {
         if ($remove) {
             add_filter('the_generator', function () {
@@ -154,16 +154,19 @@ class ThemeOptions
      *
      * @param string $filepath
      */
-    public static function editor_styles($filepath): void
+    public static function editor_styles(string $filepath): void
     {
-        add_editor_style($filepath);
+        add_action('after_setup_theme', function () use ($filepath) {
+            add_theme_support('editor-styles');
+            add_editor_style($filepath);
+        });
     }
 
     /**
      *
      * @param string $excerpt_more_string
      */
-    public static function excerpt_more($excerpt_more_string): void
+    public static function excerpt_more(string $excerpt_more_string): void
     {
         add_filter('excerpt_more', function ($more) use ($excerpt_more_string) {
             return $excerpt_more_string;
