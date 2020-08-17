@@ -96,7 +96,7 @@ class WpRouteActionResolver
     protected function getHomeAction(): ?array
     {
         $viewData = $this->injectDefaultData
-            ? (is_front_page()
+            ? (is_front_page() && !is_home()
                 ? $this->getDataForPostPage()
                 : $this->getDataForArchivePage())
             : [];
