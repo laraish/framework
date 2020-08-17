@@ -1,8 +1,8 @@
 <?php
 
-namespace Laraish\WpSupport\Providers;
+namespace Laraish\Support\Wp\Providers;
 
-use Laraish\WpSupport\ThemeOptions;
+use Laraish\Support\Wp\ThemeOptions;
 use Illuminate\Support\ServiceProvider;
 
 class ThemeOptionsProvider extends ServiceProvider

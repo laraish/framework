@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraish\WpSupport\Providers;
+namespace Laraish\Support\Wp\Providers;
 
 use Illuminate\Support\ServiceProvider;
 

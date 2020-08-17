@@ -1,11 +1,11 @@
 <?php
 
-namespace Laraish\WpSupport\Model;
+namespace Laraish\Support\Wp\Model;
 
 use WP_Term;
 use InvalidArgumentException;
 use Illuminate\Support\Collection;
-use Laraish\WpSupport\Query\QueryResults;
+use Laraish\Support\Wp\Query\QueryResults;
 
 class Term extends BaseModel
 {

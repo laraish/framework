@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraish\WpSupport\Model;
+namespace Laraish\Support\Wp\Model;
 
 use WP_User;
 use Illuminate\Support\Collection;

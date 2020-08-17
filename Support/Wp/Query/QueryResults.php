@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraish\WpSupport\Query;
+namespace Laraish\Support\Wp\Query;
 
 use WP_Query;
 use Laraish\Pagination\Paginator;

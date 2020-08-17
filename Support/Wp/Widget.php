@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraish\WpSupport;
+namespace Laraish\Support\Wp;
 
 use WP_Widget;
 

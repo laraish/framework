@@ -1,9 +1,10 @@
 <?php
 
-namespace Laraish\Foundation\Debugger;
+namespace Laraish\Routing\Traits;
 
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Route;
+use Laraish\Support\Facades\WpRoute;
 
 trait ViewDebugger
 {
@@ -26,13 +27,15 @@ trait ViewDebugger
             return $viewObject;
         }
 
+        $isWpRoute = !!WpRoute::current();
+
         $debugInfo = json_encode([
             'view_path' => $viewObject->getPath(),
             'compiled_path' => get_compiled_path($viewObject),
             'data' => $viewObject->getData(),
-            'action' => Route::currentRouteAction(),
-            'route_name' => Route::currentRouteName(),
-            'middleware' => Route::current()->computedMiddleware,
+            'action' => $isWpRoute ? WpRoute::currentRouteAction() : Route::currentRouteAction(),
+            'route_name' => $isWpRoute ? WpRoute::currentRouteName() : Route::currentRouteName(),
+            'middleware' => $isWpRoute ? WpRoute::current()->computedMiddleware : Route::current()->computedMiddleware,
         ]);
 
         $script = "<script>console.log('view-debugger',$debugInfo)</script>";

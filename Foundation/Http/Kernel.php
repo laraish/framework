@@ -15,7 +15,7 @@ class Kernel extends HttpKernel
     /**
      * Handle an incoming HTTP request.
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Request $request
      *
      * @return \Illuminate\Http\Response
      */
@@ -62,6 +62,8 @@ class Kernel extends HttpKernel
                 return $template;
             }
 
+            $this->syncMiddlewareToWpRouter();
+
             try {
                 $response = (new Pipeline($this->app))
                     ->send($request)
@@ -69,10 +71,6 @@ class Kernel extends HttpKernel
                     ->then($this->dispatchToRouter());
             } catch (Exception $e) {
                 $this->reportException($e);
-
-                $response = $this->renderException($request, $e);
-            } catch (Throwable $e) {
-                $this->reportException($e = new FatalThrowableError($e));
 
                 $response = $this->renderException($request, $e);
             }
@@ -83,5 +81,13 @@ class Kernel extends HttpKernel
 
             return $template;
         }, PHP_INT_MAX);
+    }
+
+    protected function syncMiddlewareToWpRouter()
+    {
+        $originalRouter = $this->router;
+        $this->router = $this->app['wpRouter']->getRouter();
+        parent::syncMiddlewareToRouter();
+        $this->router = $originalRouter;
     }
 }

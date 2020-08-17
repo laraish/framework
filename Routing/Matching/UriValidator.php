@@ -7,8 +7,8 @@ use Illuminate\Routing\Matching\ValidatorInterface;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Matching\UriValidator as OriginalUriValidator;
 use Illuminate\Support\Collection;
-use Laraish\WpSupport\Model\Post;
-use Laraish\WpSupport\Model\Term;
+use Laraish\Support\Wp\Model\Post;
+use Laraish\Support\Wp\Model\Term;
 
 class UriValidator implements ValidatorInterface
 {

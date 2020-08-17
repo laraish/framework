@@ -1,8 +1,13 @@
 <?php
 
-namespace Laraish\WpSupport\Model;
+namespace Laraish\Support\Wp\Model;
 
-abstract class BaseModel
+use JsonSerializable;
+use Illuminate\Support\Collection;
+use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Contracts\Support\Arrayable;
+
+abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
 {
     /**
      * The model's attributes(cached value).
@@ -16,6 +21,13 @@ abstract class BaseModel
      * @var array
      */
     protected $acfFields;
+
+    /**
+     * The attributes that should be visible in serialization.
+     *
+     * @var array
+     */
+    protected $visible = [];
 
     /**
      * Get an attribute from the model.
@@ -160,6 +172,43 @@ abstract class BaseModel
         $this->attributes[$key] = $value;
 
         return $value;
+    }
+
+
+    /**
+     * Convert model to array.
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $attributes = (new Collection($this->visible))->mapWithKeys(function ($attribute) {
+            return [$attribute => $this->{$attribute}];
+        });
+
+        return $attributes->all();
+    }
+
+    /**
+     * Convert the model instance to JSON.
+     *
+     * @param int $options
+     * @return string
+     */
+    public function toJson($options = 0): string
+    {
+        $json = json_encode($this->jsonSerialize(), $options);
+
+        return $json;
+    }
+
+    /**
+     * Convert the object into something JSON serializable.
+     *
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 
     /**

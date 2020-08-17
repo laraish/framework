@@ -1,12 +1,12 @@
 <?php
 
-namespace Laraish\WpSupport\Model;
+namespace Laraish\Support\Wp\Model;
 
 use WP_Post;
 use WP_Query;
 use DateTime;
 use Illuminate\Support\Collection;
-use Laraish\WpSupport\Query\QueryResults;
+use Laraish\Support\Wp\Query\QueryResults;
 
 class Post extends BaseModel
 {

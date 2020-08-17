@@ -2,15 +2,15 @@
 
 namespace Laraish\Foundation\Support\Providers;
 
-use Illuminate\Routing\Matching\HostValidator;
-use Illuminate\Routing\Matching\MethodValidator;
-use Illuminate\Routing\Matching\SchemeValidator;
-use Laraish\Routing\Matching\UriValidator;
-use Illuminate\Routing\Route;
+use Laraish\Routing\WpRouter;
+use Illuminate\Support\Facades\Route;
+use Laraish\Routing\WpRouteController;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
 {
+    protected static $wpMiddleware = [];
+
     /**
      * Switch validator for WordPress
      *
@@ -18,13 +18,40 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Route::$validators = [
-            new MethodValidator,
-            new SchemeValidator,
-            new HostValidator,
-            new UriValidator,
-        ];
-
         parent::boot();
+
+        $this->addWpRoutesAsFallback();
     }
+
+    public function register()
+    {
+        $this->registerWpRouter();
+    }
+
+    protected function addWpRoutesAsFallback(): void
+    {
+        $placeholder = 'fallbackPlaceholder';
+
+        Route::any("{{$placeholder}}", [WpRouteController::class, 'dispatch'])
+            ->where($placeholder, '.*')->fallback();
+    }
+
+    /**
+     * Register the router instance.
+     *
+     * @return void
+     */
+    protected function registerWpRouter()
+    {
+        $this->app->singleton('wpRouter', function ($app) {
+            return new WpRouter($app['events'], $app);
+        });
+    }
+
+
+    public static function getWpMiddleware()
+    {
+        return static::$wpMiddleware;
+    }
+
 }

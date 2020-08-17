@@ -1,10 +1,10 @@
 <?php
 
-namespace Laraish\WpSupport;
+namespace Laraish\Support\Wp;
 
 use WP_Post;
 use Laraish\Helper;
-use Laraish\WpSupport\Model\Post;
+use Laraish\Support\Wp\Model\Post;
 
 class ThemeOptions
 {
@@ -357,6 +357,35 @@ class ThemeOptions
 
             return $value;
         }, 20, 3);
+    }
+
+    /**
+     * Remove the 'wp-block-library' and 'wp-block-library-theme' style from both admin and frontend pages.
+     * Set this to `true` to disable the default styles for the Gutenberg blocks that comes with WordPress.
+     *
+     * @param bool $value
+     */
+    public static function remove_block_library_styles(bool $value): void
+    {
+        if (!$value) {
+            return;
+        }
+
+        add_filter('print_admin_styles', function () {
+            $styles = explode(',', wp_styles()->concat);
+            $stylesToBeRemoved = ['wp-block-library', 'wp-block-library-theme',];
+
+            wp_styles()->concat = implode(',', array_filter($styles, function ($style) use ($stylesToBeRemoved) {
+                return !in_array($style, $stylesToBeRemoved);
+            }));
+
+            return true;
+        });
+
+        add_action('wp_enqueue_scripts', function () {
+            wp_dequeue_style('wp-block-library');
+            wp_dequeue_style('wp-block-library-theme');
+        }, 100);
     }
 
 }

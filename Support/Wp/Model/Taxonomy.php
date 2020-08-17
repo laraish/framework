@@ -1,6 +1,6 @@
 <?php
 
-namespace Laraish\WpSupport\Model;
+namespace Laraish\Support\Wp\Model;
 
 use WP_Term;
 use WP_Term_Query;
