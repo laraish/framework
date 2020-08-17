@@ -106,14 +106,14 @@ class Post extends BaseModel
         $thumbnailObject = null;
         $thumbnail = wp_get_attachment_image_src(get_post_thumbnail_id($this->wpPost), $size);
         if ($thumbnail) {
-            $thumbnailObject = (object)[
+            $thumbnailObject = (object) [
                 'url' => $thumbnail[0],
                 'width' => $thumbnail[1],
-                'height' => $thumbnail[2]
+                'height' => $thumbnail[2],
             ];
-        } else if ($imgPlaceHolder) {
-            $thumbnailObject = (object)[
-                'url' => $imgPlaceHolder
+        } elseif ($imgPlaceHolder) {
+            $thumbnailObject = (object) [
+                'url' => $imgPlaceHolder,
             ];
         }
 
@@ -202,7 +202,6 @@ class Post extends BaseModel
 
         return $this->setAttribute(__METHOD__, $time);
     }
-
 
     /**
      * The modified date and time of this post.
@@ -365,7 +364,6 @@ class Post extends BaseModel
         return $this->setAttribute(__METHOD__, $isPasswordRequired);
     }
 
-
     /**
      * Updates the post meta field.
      *
@@ -507,7 +505,7 @@ class Post extends BaseModel
         if ($wp_query) {
             $posts = array_map(function ($post) {
                 return new static($post);
-            }, (array)$wp_query->posts);
+            }, (array) $wp_query->posts);
         }
 
         return QueryResults::create($posts, $wp_query);

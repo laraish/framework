@@ -15,7 +15,7 @@ trait ViewResolver
      */
     protected function resolveView(string $defaultView, array $data = [], bool $injectDefaultData = true)
     {
-        $wpRouteActionResolver = new WpRouteActionResolver;
+        $wpRouteActionResolver = new WpRouteActionResolver();
         $wpRouteActionResolver->resolveController = false;
         $wpRouteActionResolver->injectDefaultData = $injectDefaultData;
         $action = $wpRouteActionResolver->resolve();

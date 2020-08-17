@@ -20,7 +20,6 @@ class WpRouteController extends Controller
             $wpRouter->middleware($wpMiddleware)->group($this->wpRoutes());
         }
 
-
         $response = $wpRouter->dispatch($request);
 
         return $response;

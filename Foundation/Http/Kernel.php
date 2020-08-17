@@ -56,31 +56,33 @@ class Kernel extends HttpKernel
         }
 
         // Get response on `template_include` filter so the conditional functions work correctly
-        add_filter('template_include', function ($template) use ($request) {
-            // If the template is not index.php, then don't output anything
-            if ($template !== get_template_directory() . '/index.php') {
+        add_filter(
+            'template_include',
+            function ($template) use ($request) {
+                // If the template is not index.php, then don't output anything
+                if ($template !== get_template_directory() . '/index.php') {
+                    return $template;
+                }
+
+                $this->syncMiddlewareToWpRouter();
+
+                try {
+                    $response = (new Pipeline($this->app))
+                        ->send($request)
+                        ->through($this->app->shouldSkipMiddleware() ? [] : $this->middleware)
+                        ->then($this->dispatchToRouter());
+                } catch (Exception $e) {
+                    $this->reportException($e);
+
+                    $response = $this->renderException($request, $e);
+                }
+
+                $this->app['events']->dispatch(new RequestHandled($request, $response));
+
                 return $template;
-            }
-
-            $this->syncMiddlewareToWpRouter();
-
-            try {
-                $response = (new Pipeline($this->app))
-                    ->send($request)
-                    ->through($this->app->shouldSkipMiddleware() ? [] : $this->middleware)
-                    ->then($this->dispatchToRouter());
-            } catch (Exception $e) {
-                $this->reportException($e);
-
-                $response = $this->renderException($request, $e);
-            }
-
-            $this->app['events']->dispatch(
-                new RequestHandled($request, $response)
-            );
-
-            return $template;
-        }, PHP_INT_MAX);
+            },
+            PHP_INT_MAX
+        );
     }
 
     protected function syncMiddlewareToWpRouter()

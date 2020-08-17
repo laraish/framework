@@ -57,7 +57,7 @@ class WpRouter
      */
     public function home($action, $methods = null)
     {
-        $uri = "home";
+        $uri = 'home';
         return $this->addRoute($uri, $action, $methods);
     }
 
@@ -70,7 +70,7 @@ class WpRouter
      */
     public function archive($action, $methods = null)
     {
-        $uri = "archive";
+        $uri = 'archive';
         return $this->addRoute($uri, $action, $methods);
     }
 
@@ -163,7 +163,7 @@ class WpRouter
      */
     public function search($action, $methods = null)
     {
-        $uri = "search";
+        $uri = 'search';
         return $this->addRoute($uri, $action, $methods);
     }
 
@@ -176,7 +176,7 @@ class WpRouter
      */
     public function notFound($action, $methods = null)
     {
-        $uri = "404";
+        $uri = '404';
         return $this->addRoute($uri, $action, $methods);
     }
 
@@ -191,17 +191,15 @@ class WpRouter
     {
         $placeholder = 'fallbackPlaceholder';
 
-        return $this->router->any("{{$placeholder}}", $action)
-            ->where($placeholder, '.*');
+        return $this->router->any("{{$placeholder}}", $action)->where($placeholder, '.*');
     }
-
 
     /**
      * Discovery the controller or view automatically.
      */
     public function autoDiscovery(): void
     {
-        $actionAndData = (new WpRouteActionResolver)->resolve();
+        $actionAndData = (new WpRouteActionResolver())->resolve();
 
         if ($actionAndData === null) {
             return;
@@ -213,9 +211,7 @@ class WpRouter
         $route = $this->matchAll($action);
 
         if ($data) {
-            $route
-                ->defaults('view', Arr::pull($data, 'view'))
-                ->defaults('data', $data);
+            $route->defaults('view', Arr::pull($data, 'view'))->defaults('data', $data);
         }
     }
 
@@ -228,10 +224,7 @@ class WpRouter
     public function dispatch(Request $request)
     {
         $originalValidators = Route::getValidators();
-        $newValidators = [
-            new UriValidator, new MethodValidator,
-            new SchemeValidator, new HostValidator,
-        ];
+        $newValidators = [new UriValidator(), new MethodValidator(), new SchemeValidator(), new HostValidator()];
 
         Route::$validators = $newValidators;
 
@@ -257,8 +250,12 @@ class WpRouter
      * @param string|string[]|null $methods
      * @return array
      */
-    protected function normalizeSignature(string $baseUri, $selectorOrAction, $actionOrMethods = null, $methods = null): array
-    {
+    protected function normalizeSignature(
+        string $baseUri,
+        $selectorOrAction,
+        $actionOrMethods = null,
+        $methods = null
+    ): array {
         $selector = $selectorOrAction;
         $action = $actionOrMethods;
 

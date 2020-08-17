@@ -33,7 +33,7 @@ class EventServiceProvider extends ServiceProvider
             return false;
         }
 
-        if ( ! is_array($array[0])) {
+        if (!is_array($array[0])) {
             return false;
         }
 
@@ -42,35 +42,42 @@ class EventServiceProvider extends ServiceProvider
 
     public function addHooks($type, $name, $listeners)
     {
-        if ( ! is_array($listeners)) {
+        if (!is_array($listeners)) {
             $listeners = [$listeners];
         } else {
             $listeners = $this->isNested($listeners) ? $listeners : [$listeners];
         }
 
         foreach ($listeners as $listener) {
-            $fn                = 'add_' . $type; // `add_action` or `add_filter`
-            $priority          = 10;
-            $argumentsNumber   = 10;
+            $fn = 'add_' . $type; // `add_action` or `add_filter`
+            $priority = 10;
+            $argumentsNumber = 10;
             $listenerClassName = $listener;
 
             if (is_array($listener)) {
                 if (Arr::isAssociative($listener)) {
                     $listenerClassName = $listener['listener'];
-                    $priority          = isset($listener['priority']) ? $listener['priority'] : $priority;
-                    $argumentsNumber   = isset($listener['argumentsNumber']) ? $listener['argumentsNumber'] : $argumentsNumber;
+                    $priority = isset($listener['priority']) ? $listener['priority'] : $priority;
+                    $argumentsNumber = isset($listener['argumentsNumber'])
+                        ? $listener['argumentsNumber']
+                        : $argumentsNumber;
                 } else {
                     $listenerClassName = isset($listener[0]) ? $listener[0] : $priority;
-                    $priority          = isset($listener[1]) ? $listener[1] : $priority;
-                    $argumentsNumber   = isset($listener[2]) ? $listener[2] : $argumentsNumber;
+                    $priority = isset($listener[1]) ? $listener[1] : $priority;
+                    $argumentsNumber = isset($listener[2]) ? $listener[2] : $argumentsNumber;
                 }
             }
 
-            $fn($name, function () use ($listenerClassName) {
-                $listenerInstance = app()->make($listenerClassName);
+            $fn(
+                $name,
+                function () use ($listenerClassName) {
+                    $listenerInstance = app()->make($listenerClassName);
 
-                return call_user_func_array([$listenerInstance, 'handle'], func_get_args());
-            }, $priority, $argumentsNumber);
+                    return call_user_func_array([$listenerInstance, 'handle'], func_get_args());
+                },
+                $priority,
+                $argumentsNumber
+            );
         }
     }
 

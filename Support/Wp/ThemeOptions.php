@@ -8,7 +8,6 @@ use Laraish\Support\Wp\Model\Post;
 
 class ThemeOptions
 {
-
     /**
      * Arrays passed to the add_theme_support function.
      *
@@ -86,17 +85,28 @@ class ThemeOptions
     public static function add_thumbnail_to_post_columns(array $postTypes): void
     {
         foreach ($postTypes as $postType) {
-            add_filter("manage_{$postType}_posts_columns", function ($defaults) {
-                $defaults['thumbnail'] = __('Thumbnail');
+            add_filter(
+                "manage_{$postType}_posts_columns",
+                function ($defaults) {
+                    $defaults['thumbnail'] = __('Thumbnail');
 
-                return $defaults;
-            }, 5);
+                    return $defaults;
+                },
+                5
+            );
 
-            add_action("manage_{$postType}_posts_custom_column", function ($columnName) {
-                if ($columnName === 'thumbnail') {
-                    the_post_thumbnail('medium', ['style' => 'width:100%; max-width:100px; height:auto;']);
-                }
-            }, 5, 2);
+            add_action(
+                "manage_{$postType}_posts_custom_column",
+                function ($columnName) {
+                    if ($columnName === 'thumbnail') {
+                        the_post_thumbnail('medium', [
+                            'style' => 'width:100%; max-width:100px; height:auto;',
+                        ]);
+                    }
+                },
+                5,
+                2
+            );
 
             add_action('admin_head', function () {
                 echo '<style>.column-thumbnail { width: 10%; }</style>';
@@ -202,22 +212,30 @@ class ThemeOptions
     {
         foreach ($templates as $template) {
             if (isset($template['post'])) {
-                foreach ((array)$template['post'] as $post) {
+                foreach ((array) $template['post'] as $post) {
                     $post = $post instanceof Post ? $post : new Post($post);
-                    add_filter("theme_{$post->post_type}_templates", function ($post_templates, $wp_theme, $post_being_edited) use ($template, $post) {
-                        $post_being_edited = $post_being_edited ?? get_post();
-                        if ($post_being_edited instanceof WP_Post AND (int)$post_being_edited->ID === $post->id()) {
-                            $templateName = $templatePath = $template['name'];
-                            $post_templates[$templatePath] = $templateName;
-                        }
+                    add_filter(
+                        "theme_{$post->post_type}_templates",
+                        function ($post_templates, $wp_theme, $post_being_edited) use ($template, $post) {
+                            $post_being_edited = $post_being_edited ?? get_post();
+                            if (
+                                $post_being_edited instanceof WP_Post and
+                                (int) $post_being_edited->ID === $post->id()
+                            ) {
+                                $templateName = $templatePath = $template['name'];
+                                $post_templates[$templatePath] = $templateName;
+                            }
 
-                        return $post_templates;
-                    }, 10, 3);
+                            return $post_templates;
+                        },
+                        10,
+                        3
+                    );
                 }
             }
 
             if (isset($template['post_type'])) {
-                foreach ((array)$template['post_type'] as $post_type) {
+                foreach ((array) $template['post_type'] as $post_type) {
                     add_filter("theme_{$post_type}_templates", function ($post_templates) use ($template) {
                         $templateName = $templatePath = $template['name'];
                         $post_templates[$templatePath] = $templateName;
@@ -238,12 +256,12 @@ class ThemeOptions
     {
         add_action('admin_enqueue_scripts', function ($hook) use ($options) {
             $defaults = [
-                'hook'         => null,
-                'src'          => '',
+                'hook' => null,
+                'src' => '',
                 'dependencies' => [],
-                'version'      => false,
-                'media'        => 'all',
-                'in_footer'    => false
+                'version' => false,
+                'media' => 'all',
+                'in_footer' => false,
             ];
 
             $scriptDependencies = ['jquery', 'underscore', 'backbone'];
@@ -258,12 +276,12 @@ class ThemeOptions
                     $args = array_merge($defaults, $_args);
 
                     // Use global `hook` parameter if possible.
-                    if (is_null($args['hook']) AND ! empty($options['hook'])) {
+                    if (is_null($args['hook']) and !empty($options['hook'])) {
                         $args['hook'] = $options['hook'];
                     }
 
                     if (is_callable($args['hook'])) {
-                        if ( ! call_user_func($args['hook'], $hook, get_current_screen())) {
+                        if (!call_user_func($args['hook'], $hook, get_current_screen())) {
                             continue;
                         }
                     } elseif ($args['hook'] !== $hook) {
@@ -276,14 +294,26 @@ class ThemeOptions
                     }
 
                     if ($optionName === 'scripts') {
-                        if ( ! isset($_args['dependencies'])) {
+                        if (!isset($_args['dependencies'])) {
                             $args['dependencies'] = $scriptDependencies;
                         }
-                        wp_enqueue_script($args['name'], $args['src'], $args['dependencies'], $args['version'], $args['in_footer']);
+                        wp_enqueue_script(
+                            $args['name'],
+                            $args['src'],
+                            $args['dependencies'],
+                            $args['version'],
+                            $args['in_footer']
+                        );
                     }
 
                     if ($optionName === 'styles') {
-                        wp_enqueue_style($args['name'], $args['src'], $args['dependencies'], $args['version'], $args['media']);
+                        wp_enqueue_style(
+                            $args['name'],
+                            $args['src'],
+                            $args['dependencies'],
+                            $args['version'],
+                            $args['media']
+                        );
                     }
                 }
             }
@@ -314,49 +344,54 @@ class ThemeOptions
         $userClass = $options['user'] ?? null;
         $assocArrayToObject = $options['assoc_array_to_object'] ?? false;
 
-        add_filter('acf/format_value', function ($value, $post_id, $field) use ($termClass, $userClass, $assocArrayToObject, $postClass) {
-            if ($postClass && $value instanceof \WP_Post) {
-                $modelClassName = $postClass instanceof \Closure ? $postClass($value) : $postClass;
-                return new $modelClassName($value);
-            }
+        add_filter(
+            'acf/format_value',
+            function ($value, $post_id, $field) use ($termClass, $userClass, $assocArrayToObject, $postClass) {
+                if ($postClass && $value instanceof \WP_Post) {
+                    $modelClassName = $postClass instanceof \Closure ? $postClass($value) : $postClass;
+                    return new $modelClassName($value);
+                }
 
-            if ($termClass && $value instanceof \WP_Term) {
-                $modelClassName = $termClass instanceof \Closure ? $termClass($value) : $termClass;
-                return new $modelClassName($value);
-            }
+                if ($termClass && $value instanceof \WP_Term) {
+                    $modelClassName = $termClass instanceof \Closure ? $termClass($value) : $termClass;
+                    return new $modelClassName($value);
+                }
 
-            if ($userClass && $value instanceof \WP_User) {
-                $modelClassName = $userClass instanceof \Closure ? $userClass($value) : $userClass;
-                return new $modelClassName($value);
-            }
+                if ($userClass && $value instanceof \WP_User) {
+                    $modelClassName = $userClass instanceof \Closure ? $userClass($value) : $userClass;
+                    return new $modelClassName($value);
+                }
 
-            if ($postClass && Helper::isArrayOfType($value, \WP_Post::class)) {
-                return array_map(function (\WP_Post $post) use ($postClass) {
-                    $modelClassName = $postClass instanceof \Closure ? $postClass($post) : $postClass;
-                    return new $modelClassName($post);
-                }, $value);
-            }
+                if ($postClass && Helper::isArrayOfType($value, \WP_Post::class)) {
+                    return array_map(function (\WP_Post $post) use ($postClass) {
+                        $modelClassName = $postClass instanceof \Closure ? $postClass($post) : $postClass;
+                        return new $modelClassName($post);
+                    }, $value);
+                }
 
-            if ($termClass && Helper::isArrayOfType($value, \WP_Term::class)) {
-                return array_map(function (\WP_Term $term) use ($termClass) {
-                    $modelClassName = $termClass instanceof \Closure ? $termClass($term) : $termClass;
-                    return new $modelClassName($term);
-                }, $value);
-            }
+                if ($termClass && Helper::isArrayOfType($value, \WP_Term::class)) {
+                    return array_map(function (\WP_Term $term) use ($termClass) {
+                        $modelClassName = $termClass instanceof \Closure ? $termClass($term) : $termClass;
+                        return new $modelClassName($term);
+                    }, $value);
+                }
 
-            if ($userClass && Helper::isArrayOfType($value, \WP_User::class)) {
-                return array_map(function (\WP_User $user) use ($userClass) {
-                    $modelClassName = $userClass instanceof \Closure ? $userClass($user) : $userClass;
-                    return new $modelClassName($user);
-                }, $value);
-            }
+                if ($userClass && Helper::isArrayOfType($value, \WP_User::class)) {
+                    return array_map(function (\WP_User $user) use ($userClass) {
+                        $modelClassName = $userClass instanceof \Closure ? $userClass($user) : $userClass;
+                        return new $modelClassName($user);
+                    }, $value);
+                }
 
-            if ($assocArrayToObject && is_array($value)) {
-                return Helper::arrayToObject($value, true);
-            }
+                if ($assocArrayToObject && is_array($value)) {
+                    return Helper::arrayToObject($value, true);
+                }
 
-            return $value;
-        }, 20, 3);
+                return $value;
+            },
+            20,
+            3
+        );
     }
 
     /**
@@ -373,19 +408,25 @@ class ThemeOptions
 
         add_filter('print_admin_styles', function () {
             $styles = explode(',', wp_styles()->concat);
-            $stylesToBeRemoved = ['wp-block-library', 'wp-block-library-theme',];
+            $stylesToBeRemoved = ['wp-block-library', 'wp-block-library-theme'];
 
-            wp_styles()->concat = implode(',', array_filter($styles, function ($style) use ($stylesToBeRemoved) {
-                return !in_array($style, $stylesToBeRemoved);
-            }));
+            wp_styles()->concat = implode(
+                ',',
+                array_filter($styles, function ($style) use ($stylesToBeRemoved) {
+                    return !in_array($style, $stylesToBeRemoved);
+                })
+            );
 
             return true;
         });
 
-        add_action('wp_enqueue_scripts', function () {
-            wp_dequeue_style('wp-block-library');
-            wp_dequeue_style('wp-block-library-theme');
-        }, 100);
+        add_action(
+            'wp_enqueue_scripts',
+            function () {
+                wp_dequeue_style('wp-block-library');
+                wp_dequeue_style('wp-block-library-theme');
+            },
+            100
+        );
     }
-
 }

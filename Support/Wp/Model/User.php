@@ -32,7 +32,7 @@ class User extends BaseModel
                 $wpUser = $id;
                 $id = $wpUser->ID;
             } elseif (is_numeric($id)) {
-                $id = (int)$id;
+                $id = (int) $id;
                 $wpUser = new WP_User($id);
             } else {
                 foreach (['slug', 'email', 'login'] as $field) {
@@ -64,13 +64,12 @@ class User extends BaseModel
      */
     public function resolveAcfFields()
     {
-        if ( ! \function_exists('get_fields')) {
+        if (!\function_exists('get_fields')) {
             return [];
         }
 
         return get_fields($this->wpUser);
     }
-
 
     public function id(): int
     {

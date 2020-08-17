@@ -24,14 +24,14 @@ class Taxonomy extends BaseModel
      * The default term class to be used to create new instances.
      * @type string
      */
-    static protected $defaultTermClass = Term::class;
+    protected static $defaultTermClass = Term::class;
 
     /**
      * Set the default term class to be used to create new instances.
      *
      * @param string $termClass
      */
-    static public function setDefaultTermClass(string $termClass)
+    public static function setDefaultTermClass(string $termClass)
     {
         static::$defaultTermClass = $termClass;
     }
@@ -139,7 +139,7 @@ class Taxonomy extends BaseModel
             $query = new WP_Term_Query([
                 'taxonomy' => $taxonomyName,
                 'slug' => $childrenCategorySlug,
-                'parent' => $parentTerm->term_id
+                'parent' => $parentTerm->term_id,
             ]);
 
             $queriedTerms = $query->get_terms();
@@ -197,10 +197,12 @@ class Taxonomy extends BaseModel
      */
     public static function getSlugHierarchyByTerm(Term $term): array
     {
-        $categoryHierarchy = $term->ancestors()->map(function (Term $term) {
-            return $term->slug();
-        })->push($term->slug());
-
+        $categoryHierarchy = $term
+            ->ancestors()
+            ->map(function (Term $term) {
+                return $term->slug();
+            })
+            ->push($term->slug());
 
         return implode('/', $categoryHierarchy->toArray());
     }

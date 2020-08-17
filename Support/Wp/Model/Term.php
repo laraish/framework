@@ -167,7 +167,7 @@ class Term extends BaseModel
     {
         $ancestors = [];
         $term = $this->wpTerm;
-        while (!is_wp_error($term) AND !empty($term->parent)) {
+        while (!is_wp_error($term) and !empty($term->parent)) {
             $ancestors[] = $term = get_term($term->parent, $this->wpTerm->taxonomy);
         }
 
@@ -188,7 +188,9 @@ class Term extends BaseModel
     {
         $queried_object = get_queried_object();
 
-        $isQueried = (isset($queried_object->term_taxonomy_id) AND $queried_object->term_taxonomy_id === $this->termTaxonomyId());
+        $isQueried =
+            (isset($queried_object->term_taxonomy_id) and
+            $queried_object->term_taxonomy_id === $this->termTaxonomyId());
 
         return $this->setAttribute(__METHOD__, $isQueried);
     }
@@ -264,7 +266,9 @@ class Term extends BaseModel
     {
         if (!($postClassName === Post::class || is_subclass_of($postClassName, Post::class))) {
             $baseClassName = Post::class;
-            throw new \InvalidArgumentException("The post class name must be a subclass of $baseClassName. `$postClassName` given.");
+            throw new \InvalidArgumentException(
+                "The post class name must be a subclass of $baseClassName. `$postClassName` given."
+            );
         }
 
         $query = array_merge($query, [
@@ -273,8 +277,8 @@ class Term extends BaseModel
                     'taxonomy' => $this->taxonomy(),
                     'field' => 'term_taxonomy_id',
                     'terms' => $this->termTaxonomyId(),
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $method = isset($query['posts_per_page']) ? 'query' : 'all';
@@ -305,7 +309,7 @@ class Term extends BaseModel
         $value = parent::__get($key);
 
         if (null === $value) {
-            $value = $this->wpTerm->$key ?? $this->meta($key) ?? null;
+            $value = $this->wpTerm->$key ?? ($this->meta($key) ?? null);
         }
 
         return $value;

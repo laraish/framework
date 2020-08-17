@@ -33,7 +33,8 @@ class RouteServiceProvider extends ServiceProvider
         $placeholder = 'fallbackPlaceholder';
 
         Route::any("{{$placeholder}}", [WpRouteController::class, 'dispatch'])
-            ->where($placeholder, '.*')->fallback();
+            ->where($placeholder, '.*')
+            ->fallback();
     }
 
     /**
@@ -48,10 +49,8 @@ class RouteServiceProvider extends ServiceProvider
         });
     }
 
-
     public static function getWpMiddleware()
     {
         return static::$wpMiddleware;
     }
-
 }

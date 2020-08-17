@@ -1,3 +1,5 @@
 {
-  "singleQuote": true
+  "singleQuote": true,
+  "phpVersion": "7.2",
+  "printWidth": 120
 }

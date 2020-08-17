@@ -50,39 +50,43 @@ class WpRouteActionResolver
     {
         $queriedObject = $this->queriedObject;
 
-        if ((is_home() || is_front_page()) && $action = $this->getHomeAction()) {
+        if ((is_home() || is_front_page()) && ($action = $this->getHomeAction())) {
             return $action;
         }
 
-        if (is_page() && $queriedObject instanceof \WP_Post && $action = $this->getPageAction()) {
+        if (is_page() && $queriedObject instanceof \WP_Post && ($action = $this->getPageAction())) {
             return $action;
         }
 
-        if (is_singular() && $queriedObject instanceof \WP_Post && $action = $this->getSingularAction()) {
+        if (is_singular() && $queriedObject instanceof \WP_Post && ($action = $this->getSingularAction())) {
             return $action;
         }
 
-        if (is_post_type_archive() && $action = $this->getPostTypeArchiveAction()) {
+        if (is_post_type_archive() && ($action = $this->getPostTypeArchiveAction())) {
             return $action;
         }
 
-        if ((is_category() || is_tag() || is_tax()) && $queriedObject instanceof \WP_Term && $action = $this->getTermAction()) {
+        if (
+            (is_category() || is_tag() || is_tax()) &&
+            $queriedObject instanceof \WP_Term &&
+            ($action = $this->getTermAction())
+        ) {
             return $action;
         }
 
-        if (is_author() && $queriedObject instanceof \WP_User && $action = $this->getAuthorAction()) {
+        if (is_author() && $queriedObject instanceof \WP_User && ($action = $this->getAuthorAction())) {
             return $action;
         }
 
-        if (is_search() && $action = $this->getSearchAction()) {
+        if (is_search() && ($action = $this->getSearchAction())) {
             return $action;
         }
 
-        if (is_archive() && $action = $this->getArchiveAction()) {
+        if (is_archive() && ($action = $this->getArchiveAction())) {
             return $action;
         }
 
-        if (is_404() && $action = $this->getNotFoundAction()) {
+        if (is_404() && ($action = $this->getNotFoundAction())) {
             return $action;
         }
 
@@ -91,9 +95,11 @@ class WpRouteActionResolver
 
     protected function getHomeAction(): ?array
     {
-        $viewData = $this->injectDefaultData ? [
-            'post' => new Post($this->queriedObject),
-        ] : [];
+        $viewData = $this->injectDefaultData
+            ? [
+                'post' => new Post($this->queriedObject),
+            ]
+            : [];
 
         if ($action = $this->getGenericPageAction('home', $viewData)) {
             return $action;
@@ -109,16 +115,23 @@ class WpRouteActionResolver
         if ($pageTemplate = $post->page_template) {
             $hierarchy = ['template', Str::slug($pageTemplate)];
         } else {
-            $hierarchy = $post->ancestors()->map(function (Post $post) {
-                return $post->wpPost()->post_name;
-            })->concat([$post->wpPost()->post_name])->map(function ($slug) {
-                return urldecode($slug);
-            })->prepend('page');
+            $hierarchy = $post
+                ->ancestors()
+                ->map(function (Post $post) {
+                    return $post->wpPost()->post_name;
+                })
+                ->concat([$post->wpPost()->post_name])
+                ->map(function ($slug) {
+                    return urldecode($slug);
+                })
+                ->prepend('page');
         }
 
-        $viewData = $this->injectDefaultData ? [
-            'post' => $post,
-        ] : [];
+        $viewData = $this->injectDefaultData
+            ? [
+                'post' => $post,
+            ]
+            : [];
 
         if ($action = $this->getActionByHierarchy($hierarchy, $viewData)) {
             return $action;
@@ -141,9 +154,11 @@ class WpRouteActionResolver
             $hierarchy = ['post', $this->getPostType()];
         }
 
-        $viewData = $this->injectDefaultData ? [
-            'post' => $post,
-        ] : [];
+        $viewData = $this->injectDefaultData
+            ? [
+                'post' => $post,
+            ]
+            : [];
 
         if ($action = $this->getActionByHierarchy($hierarchy, $viewData)) {
             return $action;
@@ -169,13 +184,20 @@ class WpRouteActionResolver
         $currentTerm = new Term($this->queriedObject);
         $currentTaxonomy = urldecode($currentTerm->taxonomy());
 
-        $termHierarchy = $currentTerm->ancestors()->push($currentTerm)->map(function (Term $term) {
-            return urldecode($term->slug());
-        })->prepend($currentTaxonomy)->prepend('taxonomy');
+        $termHierarchy = $currentTerm
+            ->ancestors()
+            ->push($currentTerm)
+            ->map(function (Term $term) {
+                return urldecode($term->slug());
+            })
+            ->prepend($currentTaxonomy)
+            ->prepend('taxonomy');
 
-        $viewData = $this->injectDefaultData ? ([
-                'term' => new Term($this->queriedObject),
-            ] + $this->getDataForArchivePage()) : [];
+        $viewData = $this->injectDefaultData
+            ? [
+                    'term' => new Term($this->queriedObject),
+                ] + $this->getDataForArchivePage()
+            : [];
 
         if ($action = $this->getActionByHierarchy($termHierarchy, $viewData, 'archive')) {
             return $action;
@@ -188,9 +210,11 @@ class WpRouteActionResolver
     {
         $author = new User($this->queriedObject);
         $hierarchy = ['author', $author->nickname()];
-        $viewData = $this->injectDefaultData ? ([
-                'author' => $author,
-            ] + $this->getDataForArchivePage()) : [];
+        $viewData = $this->injectDefaultData
+            ? [
+                    'author' => $author,
+                ] + $this->getDataForArchivePage()
+            : [];
 
         if ($action = $this->getActionByHierarchy($hierarchy, $viewData, 'archive')) {
             return $action;
@@ -201,9 +225,11 @@ class WpRouteActionResolver
 
     protected function getSearchAction(): ?array
     {
-        $viewData = $this->injectDefaultData ? ([
-                'keyword' => get_search_query()
-            ] + $this->getDataForArchivePage()) : [];
+        $viewData = $this->injectDefaultData
+            ? [
+                    'keyword' => get_search_query(),
+                ] + $this->getDataForArchivePage()
+            : [];
 
         if ($action = $this->getActionByHierarchy(['search'], $viewData, 'archive')) {
             return $action;
@@ -251,7 +277,7 @@ class WpRouteActionResolver
     {
         $hierarchy = is_array($hierarchy) ? new Collection($hierarchy) : $hierarchy;
 
-        if ($this->resolveController && $action = $this->getControllerActionByHierarchy($hierarchy)) {
+        if ($this->resolveController && ($action = $this->getControllerActionByHierarchy($hierarchy))) {
             return $action;
         }
 
@@ -278,9 +304,11 @@ class WpRouteActionResolver
 
         while ($hierarchy->count() > 0) {
             $controller = $this->fullyQualifiedController(
-                $hierarchy->map(function ($slug) {
-                    return ucfirst(Str::camel($slug));
-                })->implode('\\')
+                $hierarchy
+                    ->map(function ($slug) {
+                        return ucfirst(Str::camel($slug));
+                    })
+                    ->implode('\\')
             );
 
             if ($this->controllerExists($controller)) {
@@ -316,7 +344,6 @@ class WpRouteActionResolver
         return null;
     }
 
-
     protected function fullyQualifiedController(string $controllerBaseName): string
     {
         return static::$controllerNamespace . $controllerBaseName;
@@ -342,7 +369,6 @@ class WpRouteActionResolver
         return [ViewController::class, 'index', ['view' => $view] + $data];
     }
 
-
     protected function getModelClassForPostType(string $postType = null): ?string
     {
         $postType = $postType ?? $this->getPostType();
@@ -363,7 +389,6 @@ class WpRouteActionResolver
         return static::$modelNamespace . $modelBaseName;
     }
 
-
     protected function getDataForArchivePage(): array
     {
         if ($modelClass = $this->getModelClassForPostType()) {
@@ -377,10 +402,8 @@ class WpRouteActionResolver
         ];
     }
 
-
     protected function getAction(string $controller): array
     {
         return [$controller, 'index'];
     }
-
 }

@@ -26,12 +26,12 @@ class Kernel extends ConsoleKernel
         // Used in `functions.php` so that we know we can stop from launching
         // the whole theme when in `Console-Mode`, because our goal is to use
         // some of the functions of WordPress.
-        if ( ! defined('ARTISAN_BINARY')) {
+        if (!defined('ARTISAN_BINARY')) {
             define('ARTISAN_BINARY', 'artisan');
         }
 
         // Load WordPress so we can use those functions WordPress supplies for us.
-        if ( ! defined('WP_USE_THEMES')) {
+        if (!defined('WP_USE_THEMES')) {
             define('WP_USE_THEMES', false);
         }
 
@@ -43,9 +43,8 @@ class Kernel extends ConsoleKernel
         $wp_load = realpath($app->basePath() . '/../../../wp-load.php');
 
         if (file_exists($wp_load)) {
-            require_once($wp_load);
+            require_once $wp_load;
         }
-
 
         parent::__construct($app, $events);
     }

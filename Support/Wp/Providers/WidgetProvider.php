@@ -57,6 +57,5 @@ class WidgetProvider extends ServiceProvider
 
     public function register()
     {
-
     }
 }

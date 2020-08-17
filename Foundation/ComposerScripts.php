@@ -15,10 +15,13 @@ class ComposerScripts
      */
     public static function renameHelperFunctions(Event $event)
     {
-        $vendorDir   = $event->getComposer()->getConfig()->get('vendor-dir');
+        $vendorDir = $event
+            ->getComposer()
+            ->getConfig()
+            ->get('vendor-dir');
         $helpersPath = $vendorDir . '/laravel/framework/src/Illuminate/Foundation/helpers.php';
 
-        if ( ! file_exists($helpersPath)) {
+        if (!file_exists($helpersPath)) {
             return;
         }
 

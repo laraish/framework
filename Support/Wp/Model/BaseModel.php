@@ -133,12 +133,12 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
      */
     protected function getAttributeFromAcfFields(string $key)
     {
-        if (array_key_exists($key, (array)$this->acfFields)) {
+        if (array_key_exists($key, (array) $this->acfFields)) {
             return $this->acfFields[$key];
         }
 
         if ($originalKey = $this->getOriginalKey($key)) {
-            if (array_key_exists($originalKey, (array)$this->acfFields)) {
+            if (array_key_exists($originalKey, (array) $this->acfFields)) {
                 return strip_tags($this->acfFields[$originalKey]);
             }
         }
@@ -173,7 +173,6 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
 
         return $value;
     }
-
 
     /**
      * Convert model to array.
@@ -222,5 +221,4 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
     {
         return $this->getAttribute($key);
     }
-
 }

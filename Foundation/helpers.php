@@ -4,7 +4,7 @@ use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\Engines\CompilerEngine;
 use Illuminate\View\View;
 
-if ( ! function_exists('public_url')) {
+if (!function_exists('public_url')) {
     /**
      * Generate an public_url path for the application.
      *
@@ -28,7 +28,7 @@ if ( ! function_exists('public_url')) {
             // Get the full path to the asset.
             $realPath = public_path($path);
 
-            if ( ! file_exists($realPath)) {
+            if (!file_exists($realPath)) {
                 return $public_url;
             }
 
@@ -43,7 +43,7 @@ if ( ! function_exists('public_url')) {
     }
 }
 
-if ( ! function_exists('get_compiled_path')) {
+if (!function_exists('get_compiled_path')) {
     /**
      * Get the compiled path of a view.
      *
@@ -57,7 +57,7 @@ if ( ! function_exists('get_compiled_path')) {
         $engine = $view->getEngine();
         /** @type BladeCompiler $compiler */
         $compiler = $engine->getCompiler();
-        $path     = $view->getPath();
+        $path = $view->getPath();
         if ($compiler->isExpired($path)) {
             $compiler->compile($path);
         }
@@ -68,7 +68,7 @@ if ( ! function_exists('get_compiled_path')) {
     }
 }
 
-if ( ! function_exists('setup_the_post')) {
+if (!function_exists('setup_the_post')) {
     function setup_the_post($the_post)
     {
         global $post;

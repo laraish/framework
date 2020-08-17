@@ -72,7 +72,7 @@ abstract class Widget extends WP_Widget
     {
         $instance = method_exists($this, '_update') ? $this->_update($new_instance, $old_instance) : [];
         foreach ($this->fields as $field) {
-            $instance[$field] = (!empty($new_instance[$field])) ? strip_tags($new_instance[$field]) : '';
+            $instance[$field] = !empty($new_instance[$field]) ? strip_tags($new_instance[$field]) : '';
         }
 
         return $instance;
@@ -85,7 +85,7 @@ abstract class Widget extends WP_Widget
             $field_ids[$field] = $this->get_field_id($field);
         }
 
-        return (object)$field_ids;
+        return (object) $field_ids;
     }
 
     protected function get_field_names()
@@ -95,9 +95,8 @@ abstract class Widget extends WP_Widget
             $field_names[$field] = $this->get_field_name($field);
         }
 
-        return (object)$field_names;
+        return (object) $field_names;
     }
-
 
     abstract protected function displayWidget($args, $instance);
 

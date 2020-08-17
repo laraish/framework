@@ -38,7 +38,7 @@ class BladeDirectivesProvider extends ServiceProvider
         if ($expression) {
             preg_match('/(.*) as (.*)/', $expression, $matches);
             $afterAs = explode('=>', preg_replace('/\s+/', '', $matches[2]));
-            $post    = count($afterAs) === 2 ? $afterAs[1] : $afterAs[0];
+            $post = count($afterAs) === 2 ? $afterAs[1] : $afterAs[0];
             $post .= '->wpPost';
             $phpCode = "foreach({$expression}): setup_the_post( $post );";
         }
@@ -55,7 +55,7 @@ class BladeDirectivesProvider extends ServiceProvider
      */
     private function compileEndloop($expression)
     {
-        return "<?php endforeach; wp_reset_postdata(); ?>";
+        return '<?php endforeach; wp_reset_postdata(); ?>';
     }
 
     /**
