@@ -96,9 +96,9 @@ class WpRouteActionResolver
     protected function getHomeAction(): ?array
     {
         $viewData = $this->injectDefaultData
-            ? [
-                'post' => new Post($this->queriedObject),
-            ]
+            ? (is_front_page()
+                ? $this->getDataForPostPage()
+                : $this->getDataForArchivePage())
             : [];
 
         if ($action = $this->getGenericPageAction('home', $viewData)) {
@@ -142,11 +142,8 @@ class WpRouteActionResolver
 
     protected function getSingularAction(): ?array
     {
-        if ($modelClass = $this->getModelClassForPostType()) {
-            $post = new $modelClass($this->queriedObject);
-        } else {
-            $post = new Post($this->queriedObject);
-        }
+        $modelClass = $this->getModelClassForPostType() ?? Post::class;
+        $post = new $modelClass($this->queriedObject);
 
         if ($pageTemplate = $post->page_template) {
             $hierarchy = ['template', Str::slug($pageTemplate)];
@@ -181,7 +178,8 @@ class WpRouteActionResolver
 
     protected function getTermAction(): ?array
     {
-        $currentTerm = new Term($this->queriedObject);
+        $termModelClass = $this->getModelClassForTerm() ?? Term::class;
+        $currentTerm = new $termModelClass($this->queriedObject);
         $currentTaxonomy = urldecode($currentTerm->taxonomy());
 
         $termHierarchy = $currentTerm
@@ -195,7 +193,7 @@ class WpRouteActionResolver
 
         $viewData = $this->injectDefaultData
             ? [
-                    'term' => new Term($this->queriedObject),
+                    'term' => $currentTerm,
                 ] + $this->getDataForArchivePage()
             : [];
 
@@ -208,7 +206,8 @@ class WpRouteActionResolver
 
     protected function getAuthorAction(): ?array
     {
-        $author = new User($this->queriedObject);
+        $userModelClass = $this->getModelClassForUser() ?? User::class;
+        $author = new $userModelClass($this->queriedObject);
         $hierarchy = ['author', $author->nickname()];
         $viewData = $this->injectDefaultData
             ? [
@@ -312,7 +311,7 @@ class WpRouteActionResolver
             );
 
             if ($this->controllerExists($controller)) {
-                return [$controller, 'index'];
+                return $this->getAction($controller);
             }
 
             $hierarchy->pop();
@@ -379,6 +378,22 @@ class WpRouteActionResolver
         return class_exists($modelClass) ? $modelClass : null;
     }
 
+    protected function getModelClassForTerm(string $taxonomy = null): ?string
+    {
+        $taxonomy = $taxonomy ?? $this->queriedObject->taxonomy;
+        $classBaseName = ucfirst(Str::camel($taxonomy));
+        $modelClass = $this->fullyQualifiedModel("Taxonomy\\$classBaseName");
+
+        return class_exists($modelClass) ? $modelClass : null;
+    }
+
+    protected function getModelClassForUser(): ?string
+    {
+        $modelClass = $this->fullyQualifiedModel('User');
+
+        return class_exists($modelClass) ? $modelClass : null;
+    }
+
     protected function getPostType(): string
     {
         return get_post_type() ?: 'post';
@@ -391,14 +406,19 @@ class WpRouteActionResolver
 
     protected function getDataForArchivePage(): array
     {
-        if ($modelClass = $this->getModelClassForPostType()) {
-            $posts = $modelClass::queriedPosts();
-        } else {
-            $posts = Post::queriedPosts();
-        }
+        $modelClass = $this->getModelClassForPostType() ?? Post::class;
 
         return [
-            'posts' => $posts,
+            'posts' => $modelClass::queriedPosts(),
+        ];
+    }
+
+    protected function getDataForPostPage(): array
+    {
+        $modelClass = $this->getModelClassForPostType() ?? Post::class;
+
+        return [
+            'post' => new $modelClass($this->queriedObject),
         ];
     }
 
