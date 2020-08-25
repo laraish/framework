@@ -113,7 +113,7 @@ class WpRouteActionResolver
         $post = new Post($this->queriedObject);
         $pageTemplate = $post->page_template;
 
-        if ($pageTemplate !== 'default') {
+        if ($pageTemplate && $pageTemplate !== 'default') {
             $hierarchy = ['template', Str::slug($pageTemplate)];
         } else {
             $hierarchy = $post
