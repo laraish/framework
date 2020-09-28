@@ -19,12 +19,12 @@
         }
     ],
     "require": {
-        "php": "^7.2",
-        "laravel/framework": "^7.0",
-        "laraish/contracts": "^1.0",
-        "laraish/support": "^1.0",
-        "laraish/pagination": "^1.0",
-        "laraish/options": "^1.0"
+        "php": "^7.3",
+        "laravel/framework": "^8.0",
+        "laraish/contracts": "^2.0",
+        "laraish/support": "^2.0",
+        "laraish/pagination": "^2.0",
+        "laraish/options": "^2.0"
     },
     "autoload": {
         "files": [
