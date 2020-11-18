@@ -259,12 +259,12 @@ class WpRouter
         $selector = $selectorOrAction;
         $action = $actionOrMethods;
 
-        $uri = "{$baseUri}.{$selector}";
-
         if ($this->isAction($selectorOrAction)) {
             $uri = $baseUri;
             $action = $selectorOrAction;
             $methods = $actionOrMethods;
+        } else {
+            $uri = "{$baseUri}.{$selector}";
         }
 
         return [$uri, $action, $methods];
