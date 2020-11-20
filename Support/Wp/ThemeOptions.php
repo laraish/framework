@@ -4,6 +4,7 @@ namespace Laraish\Support\Wp;
 
 use WP_Post;
 use Laraish\Helper;
+use Illuminate\Support\Arr;
 use Laraish\Support\Wp\Model\Post;
 
 class ThemeOptions
@@ -33,8 +34,15 @@ class ThemeOptions
      */
     public static function post_types(array $post_types): void
     {
-        foreach ($post_types as $post_type) {
-            PostType::register($post_type['name'], $post_type['slug'], $post_type['args']);
+        $defaultArgs = [
+            'public' => true,
+            'has_archive' => true,
+        ];
+
+        foreach ($post_types as $postType => $args) {
+            add_action('init', function () use ($postType, $args, $defaultArgs) {
+                register_post_type($postType, $args + $defaultArgs);
+            });
         }
     }
 
@@ -42,39 +50,18 @@ class ThemeOptions
      * Register custom taxonomies.
      *
      * @param array $taxonomies
+     * @throws \Exception
      */
     public static function taxonomies(array $taxonomies): void
     {
-        foreach ($taxonomies as $taxonomy) {
-            Taxonomy::register($taxonomy['name'], $taxonomy['slug'], $taxonomy['object_type'], $taxonomy['args'] ?? []);
-        }
-    }
-
-    /**
-     * Display a message under the thumbnail meta box
-     * For example you can tell user to use a specific image resolution for thumbnail
-     *
-     * @param array|string $options
-     */
-    public static function thumbnail_hint_text($options): void
-    {
-        add_filter('admin_post_thumbnail_html', function ($content) use ($options) {
-            global $post_type;
-            $thumbnail_hint = $options;
-
-            if (is_array($thumbnail_hint)) {
-                foreach ($thumbnail_hint as $_post_type => $hint) {
-                    if ($post_type === $_post_type) {
-                        $content .= '<p>' . $hint . '</p>';
-                        break;
-                    }
-                }
-            } else {
-                $content .= '<p>' . $thumbnail_hint . '</p>';
+        foreach ($taxonomies as $taxonomy => $args) {
+            if (!key_exists('object_type', $args)) {
+                throw new \Exception("The `object_type` key is required to register the taxonomy `$taxonomy`.");
             }
-
-            return $content;
-        });
+            add_action('init', function () use ($taxonomy, $args) {
+                register_taxonomy($taxonomy, Arr::pull($args, 'object_type'), $args);
+            });
+        }
     }
 
     /**
