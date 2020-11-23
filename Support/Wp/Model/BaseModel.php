@@ -32,11 +32,10 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
     /**
      * Get an attribute from the model.
      *
-     * @param  string $key
-     *
+     * @param string $key
      * @return mixed
      */
-    public function getAttribute($key)
+    public function getAttribute(string $key)
     {
         if (array_key_exists($key, $this->attributes)) {
             return $this->getAttributeFromCache($key);
@@ -82,7 +81,6 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
      * e.g. `permalink_text` --> `permalink`
      *
      * @param string $key
-     *
      * @return string
      */
     protected function getOriginalKey(string $key): ?string
@@ -96,10 +94,9 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
      * Get an attribute from the $attributes array.
      *
      * @param  string $key
-     *
      * @return mixed
      */
-    protected function getAttributeFromCache($key)
+    protected function getAttributeFromCache(string $key)
     {
         if (array_key_exists($key, $this->attributes)) {
             return $this->attributes[$key];
@@ -112,7 +109,6 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
      * Get an attribute from the $attributes array.
      *
      * @param  string $key
-     *
      * @return mixed
      */
     protected function getAttributeFromMethod(string $key)
@@ -128,7 +124,6 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
      * Get the attribute from ACF fields.
      *
      * @param string $key
-     *
      * @return mixed|null|string
      */
     protected function getAttributeFromAcfFields(string $key)
@@ -157,14 +152,25 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
+     * Set all of the current attributes on the model.
+     *
+     * @param array $attributes
+     * @return static
+     */
+    public function setAttributes(array $attributes): self
+    {
+        $this->attributes = $attributes;
+        return $this;
+    }
+
+    /**
      * Store arbitrary data to the $attribute array.
      *
-     * @param $key
-     * @param $value
-     *
+     * @param string $key
+     * @param mixed $value
      * @return mixed
      */
-    protected function setAttribute($key, $value)
+    public function setAttribute(string $key, $value)
     {
         $namespaceMethod = explode('::', $key);
         $key = $namespaceMethod[1] ?? $key;
@@ -214,10 +220,9 @@ abstract class BaseModel implements Arrayable, Jsonable, JsonSerializable
      * Dynamically retrieve attributes on the model.
      *
      * @param  string $key
-     *
      * @return mixed
      */
-    public function __get($key)
+    public function __get(string $key)
     {
         return $this->getAttribute($key);
     }
