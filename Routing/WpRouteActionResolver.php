@@ -397,6 +397,10 @@ class WpRouteActionResolver
 
     protected function getPostType(): string
     {
+        if ($this->queriedObject instanceof \WP_Post_Type) {
+            return $this->queriedObject->name;
+        }
+
         return get_post_type() ?: 'post';
     }
 
