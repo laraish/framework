@@ -62,7 +62,11 @@ class WpRouteActionResolver
             return $action;
         }
 
-        if (is_post_type_archive() && ($action = $this->getPostTypeArchiveAction())) {
+        if (
+            is_post_type_archive() &&
+            $queriedObject instanceof \WP_Post_Type &&
+            ($action = $this->getPostTypeArchiveAction())
+        ) {
             return $action;
         }
 
