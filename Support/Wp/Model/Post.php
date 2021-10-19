@@ -388,7 +388,7 @@ class Post extends BaseModel
      */
     public function getMeta(string $key = '', bool $single = false)
     {
-        return get_post_meta($key, $single);
+        return get_post_meta($this->id, $key, $single);
     }
 
     /**
