@@ -37,7 +37,7 @@ class Kernel extends ConsoleKernel
 
         // Prevent from loading plugins (it could be error-prone if load plugins).
         if ($this->loadWordpressPlugins === false) {
-            define('WP_PLUGIN_DIR', '/NULL');
+            defined('WP_PLUGIN_DIR') or define('WP_PLUGIN_DIR', '/NULL');
         }
 
         $wp_load = realpath($app->basePath() . '/../../../wp-load.php');
