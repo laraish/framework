@@ -109,9 +109,35 @@ class Term extends BaseModel
      * Get the count of the term.
      * @return int
      */
-    public function count(): int
+    public function count($publicOnly = true): int
     {
-        return $this->wpTerm->count;
+        if (!$publicOnly) {
+            return $this->wpTerm->count;
+        }
+
+        /** @var \wpdb $wpdb */
+        global $wpdb;
+
+        $termId = $this->termId();
+
+        $count = $wpdb->get_var(
+            "
+select COUNT(*) as post_count
+    FROM $wpdb->posts as POSTS
+WHERE EXISTS (
+    SELECT 1
+    FROM
+         $wpdb->term_relationships as B
+             INNER JOIN $wpdb->term_taxonomy as C
+                 ON C.term_taxonomy_id = B.term_taxonomy_id
+    WHERE C.term_id = $termId
+      AND B.object_id = POSTS.ID
+    )
+  AND POSTS.post_status = 'publish'
+  "
+        );
+
+        return (int) $count;
     }
 
     /**
@@ -152,7 +178,7 @@ class Term extends BaseModel
     {
         $defaultQuery = ['parent' => $this->termId()];
         $query = array_merge($query, $defaultQuery);
-        $taxonomy = new Taxonomy($this->wpTerm->taxonomy);
+        $taxonomy = new Taxonomy($this->wpTerm->taxonomy, static::class);
         $children = $taxonomy->terms($query);
 
         return $this->setAttribute(__METHOD__, $children);
