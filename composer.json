@@ -1,6 +1,6 @@
 {
     "name": "laraish/framework",
-    "description": "The Laraish Framework for WordPress.",
+    "description": "The Laraish Framework for WordPress, updated fork.",
     "keywords": [
         "framework",
         "laravel",
@@ -9,8 +9,8 @@
     "license": "MIT",
     "homepage": "http://laravel.com",
     "support": {
-        "issues": "https://github.com/laravel/framework/issues",
-        "source": "https://github.com/laravel/framework"
+        "issues": "https://github.com/thanasisxan/laraish-framework/issues",
+        "source": "https://github.com/thanasisxan/laraish-framework"
     },
     "authors": [
         {
@@ -19,8 +19,8 @@
         }
     ],
     "require": {
-        "php": "^7.3",
-        "laravel/framework": "^8.0",
+        "php": "^8.0",
+        "laravel/framework": "^9.0",
         "laraish/contracts": "^2.0",
         "laraish/support": "^2.0",
         "laraish/pagination": "^2.0",
@@ -36,5 +36,23 @@
     },
     "scripts": {
         "fix-cs": ["prettier **/*.php --write"]
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/thanasisxan/laraish-contracts"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/thanasisxan/laraish-support"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/thanasisxan/laraish-pagination"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/thanasisxan/laraish-options"
+        }
+    ]
 }
