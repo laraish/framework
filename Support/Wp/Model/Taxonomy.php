@@ -10,26 +10,26 @@ class Taxonomy extends BaseModel
 {
     /**
      * The taxonomy name.
-     * @type string
+     * @var string
      */
     protected $name;
 
     /**
      * The term class name to be used.
-     * @type string
+     * @var class-string
      */
     protected $termClass;
 
     /**
      * The default term class to be used to create new instances.
-     * @type string
+     * @var class-string
      */
     protected static $defaultTermClass = Term::class;
 
     /**
      * Set the default term class to be used to create new instances.
      *
-     * @param string $termClass
+     * @param class-string $termClass
      */
     public static function setDefaultTermClass(string $termClass)
     {
@@ -101,13 +101,8 @@ class Taxonomy extends BaseModel
 
     /**
      * Get all Term data from database by Term field and data.
-     *
-     * @param $field
-     * @param $value
-     *
-     * @return null|Term
      */
-    public function getTermBy($field, $value): ?Term
+    public function getTermBy(string $field, string|int $value): ?Term
     {
         $term = get_term_by($field, $value, $this->name);
         if (!$term) {
@@ -123,7 +118,7 @@ class Taxonomy extends BaseModel
      * Where 'animal' is the slug of the root term, and followed by the secondary, tertiary.. and so on.
      * By using this method you'll get the exactly term where positioned at the hierarchy you specified.
      *
-     * @param array $slugHierarchy
+     * @param array<string> $slugHierarchy
      *
      * @return Collection
      */
@@ -157,7 +152,6 @@ class Taxonomy extends BaseModel
 
     /**
      * The name of this taxonomy.
-     * @return string
      */
     public function name(): string
     {
@@ -166,36 +160,24 @@ class Taxonomy extends BaseModel
 
     /**
      * Add a new term to the database.
-     *
-     * @param string $term
-     * @param array $args
-     * @return array|int[]|\WP_Error
      */
-    public function insertTerm(string $term, $args = [])
+    public function insertTerm(string $term, array $args = []): array|\WP_Error
     {
         return wp_insert_term($term, $this->name, $args);
     }
 
     /**
      * Removes a term from the database.
-     *
-     * @param int $term
-     * @param array $args
-     * @return array|bool|int|object|\WP_Error|WP_Term|null
      */
-    public function deleteTerm(int $term, $args = [])
+    public function deleteTerm(int $term, array $args = []): bool|int|\WP_Error
     {
         return wp_delete_term($term, $this->name, $args);
     }
 
     /**
      * Get slug hierarchy by a term.
-     *
-     * @param Term $term
-     *
-     * @return array
      */
-    public static function getSlugHierarchyByTerm(Term $term): array
+    public static function getSlugHierarchyByTerm(Term $term): string
     {
         $categoryHierarchy = $term
             ->ancestors()

@@ -8,23 +8,23 @@ class WidgetProvider extends ServiceProvider
 {
     /**
      * Array of Class names that will be passed to `register_widget()`
-     * @type array
+     * @var array<class-string>
      */
-    protected $widgets = [];
+    protected array $widgets = [];
 
     /**
      * Array of arguments(array) passed to `register_sidebar()`
      * Usually you should give something like [ 'name' => 'Nice Sidebar', 'id' => 'nice_sidebar']
-     * @type array
+     * @var array<string,string>
      */
-    protected $widgetAreas = [];
+    protected array $widgetAreas = [];
 
     /**
      * Very often you'd like to remove the default widgets supplied by WordPress
      * Here you can list up the widgets those you want to remove
-     * @type array
+     * @type array<string>
      */
-    protected $unregisterWidgets = [
+    protected array $unregisterWidgets = [
         'WP_Widget_Pages',
         'WP_Widget_Calendar',
         'WP_Widget_Archives',
@@ -40,7 +40,7 @@ class WidgetProvider extends ServiceProvider
         'WP_Nav_Menu_Widget',
     ];
 
-    public function boot()
+    public function boot(): void
     {
         add_action('widgets_init', function () {
             foreach ($this->widgets as $widget) {
@@ -55,7 +55,7 @@ class WidgetProvider extends ServiceProvider
         });
     }
 
-    public function register()
+    public function register(): void
     {
     }
 }

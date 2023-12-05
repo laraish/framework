@@ -14,15 +14,10 @@ class Term extends BaseModel
      */
     public const TAXONOMY = null;
 
-    /**
-     * @var WP_Term
-     */
-    protected $wpTerm;
+    protected WP_Term $wpTerm;
 
     /**
      * Term constructor.
-     *
-     * @param mixed $term
      */
     public function __construct(WP_Term $term)
     {
@@ -44,7 +39,6 @@ class Term extends BaseModel
 
     /**
      * Get the original WP_Term object.
-     * @return WP_Term
      */
     public function wpTerm(): WP_Term
     {
@@ -53,7 +47,6 @@ class Term extends BaseModel
 
     /**
      * The name of this term.
-     * @return string
      */
     public function name(): string
     {
@@ -62,7 +55,6 @@ class Term extends BaseModel
 
     /**
      * The slug of this term.
-     * @return string
      */
     public function slug(): string
     {
@@ -71,7 +63,6 @@ class Term extends BaseModel
 
     /**
      * The term_id of this term.
-     * @return int
      */
     public function termId(): int
     {
@@ -80,7 +71,6 @@ class Term extends BaseModel
 
     /**
      * The term_taxonomy_id of this term.
-     * @return int
      */
     public function termTaxonomyId(): int
     {

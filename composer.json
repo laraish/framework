@@ -7,7 +7,6 @@
         "wordpress"
     ],
     "license": "MIT",
-    "homepage": "http://laravel.com",
     "support": {
         "issues": "https://github.com/laravel/framework/issues",
         "source": "https://github.com/laravel/framework"
@@ -19,12 +18,12 @@
         }
     ],
     "require": {
-        "php": "^7.3",
-        "laravel/framework": "^8.0",
-        "laraish/contracts": "^2.0",
-        "laraish/support": "^2.0",
-        "laraish/pagination": "^2.0",
-        "laraish/options": "^2.0"
+        "php": "^8.1",
+        "laravel/framework": "^10.10",
+        "laraish/contracts": "^3.0",
+        "laraish/support": "^3.0",
+        "laraish/pagination": "^3.0",
+        "laraish/options": "^3.0"
     },
     "autoload": {
         "files": [

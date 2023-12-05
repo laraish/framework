@@ -13,27 +13,21 @@ class Post extends BaseModel
     /**
      * The default post type for querying.
      *
-     * @var string|array
+     * @var string|array<string>
      */
     public const POST_TYPE = 'post';
 
     /**
      * The post id
-     * @type integer
      */
-    protected $id;
+    protected int $id;
 
-    /**
-     * @type WP_Post
-     */
-    protected $wpPost;
+    protected WP_Post $wpPost;
 
     /**
      * Post constructor.
-     *
-     * @param int|WP_Post|null $post
      */
-    public function __construct($post = null)
+    public function __construct(int|WP_Post|null $post = null)
     {
         $this->wpPost = get_post($post);
         $this->id = $this->wpPost->ID;
@@ -62,7 +56,6 @@ class Post extends BaseModel
 
     /**
      * Get the original WP_Post object.
-     * @return WP_Post
      */
     public function wpPost(): WP_Post
     {
@@ -71,8 +64,6 @@ class Post extends BaseModel
 
     /**
      * Get the post title.
-     *
-     * @return string
      */
     public function title(): string
     {
@@ -83,10 +74,8 @@ class Post extends BaseModel
 
     /**
      * Get the post permalink.
-     *
-     * @return false|string
      */
-    public function permalink()
+    public function permalink(): false|string
     {
         $permalink = get_permalink($this->wpPost);
 
@@ -97,11 +86,11 @@ class Post extends BaseModel
      * Get the post thumbnail.
      *
      * @param string $size The thumbnail size.
-     * @param string $imgPlaceHolder The URL of the placeholder image.
+     * @param string|null $imgPlaceHolder The URL of the placeholder image.
      *
      * @return object
      */
-    public function thumbnail($size = 'full', $imgPlaceHolder = null)
+    public function thumbnail(string $size = 'full', string|null $imgPlaceHolder = null): object
     {
         $thumbnailObject = null;
         $thumbnail = wp_get_attachment_image_src(get_post_thumbnail_id($this->wpPost), $size);
@@ -122,8 +111,6 @@ class Post extends BaseModel
 
     /**
      * Check if post has an image attached.
-     *
-     * @return bool
      */
     public function hasThumbnail(): bool
     {
@@ -135,8 +122,6 @@ class Post extends BaseModel
     /**
      * Get the post excerpt.
      * This method must be called within `The Loop`.
-     *
-     * @return string
      */
     public function excerpt(): string
     {
@@ -148,8 +133,6 @@ class Post extends BaseModel
     /**
      * Get the post content.
      * This method must be called within `The Loop`.
-     *
-     * @return string
      */
     public function content($moreLinkText = null, $stripTeaser = false): string
     {
@@ -163,12 +146,8 @@ class Post extends BaseModel
     /**
      * The date and time of this post.
      * This is supposed to be used for the `datetime` attribute of `time` element.
-     *
-     * @param string $format
-     *
-     * @return false|int|string
      */
-    public function dateTime($format = DateTime::RFC3339)
+    public function dateTime(string $format = DateTime::RFC3339): string|int|false
     {
         $dateTime = get_post_time($format, false, $this->wpPost);
 
@@ -177,12 +156,8 @@ class Post extends BaseModel
 
     /**
      * Get the formatted post date.
-     *
-     * @param string $format
-     *
-     * @return mixed
      */
-    public function date($format = null)
+    public function date(string|null $format = null): string|int|false
     {
         $date = get_post_time($format ?? get_option('date_format'), false, $this->wpPost, true);
 
@@ -191,12 +166,8 @@ class Post extends BaseModel
 
     /**
      * Get the formatted post time.
-     *
-     * @param string $format
-     *
-     * @return mixed
      */
-    public function time($format = null)
+    public function time(string|null $format = null): string|int|false
     {
         $time = get_post_time($format ?? get_option('time_format'), false, $this->wpPost, true);
 
@@ -206,12 +177,8 @@ class Post extends BaseModel
     /**
      * The modified date and time of this post.
      * This is supposed to be used for the `datetime` attribute of `time` element.
-     *
-     * @param string $format
-     *
-     * @return false|int|string
      */
-    public function modifiedDateTime($format = DateTime::RFC3339)
+    public function modifiedDateTime(string $format = DateTime::RFC3339): false|int|string
     {
         $dateTime = get_post_modified_time($format, false, $this->wpPost);
 
@@ -220,12 +187,8 @@ class Post extends BaseModel
 
     /**
      * Get the formatted modified post date.
-     *
-     * @param string $format
-     *
-     * @return mixed
      */
-    public function modifiedDate($format = null)
+    public function modifiedDate(string|null $format = null): false|int|string
     {
         $date = get_post_modified_time($format ?: get_option('date_format'), false, $this->wpPost, true);
 
@@ -234,12 +197,8 @@ class Post extends BaseModel
 
     /**
      * Get the formatted modified post time.
-     *
-     * @param string $format
-     *
-     * @return mixed
      */
-    public function modifiedTime($format = null)
+    public function modifiedTime(string|null $format = null): false|int|string
     {
         $time = get_post_modified_time($format ?: get_option('time_format'), false, $this->wpPost, true);
 
@@ -247,9 +206,7 @@ class Post extends BaseModel
     }
 
     /**
-     * Get the author object
-     *
-     * @return User
+     * Get the author object.
      */
     public function author(): User
     {
@@ -354,8 +311,6 @@ class Post extends BaseModel
 
     /**
      * Test if password required for this post.
-     *
-     * @return bool
      */
     public function isPasswordRequired(): bool
     {
@@ -410,7 +365,7 @@ class Post extends BaseModel
      * @param string $context How to output the '&' character. Default '&'.
      * @return string
      */
-    public function editPostUrl($context = 'display'): string
+    public function editPostUrl(string $context = 'display'): string
     {
         $editPostUrl = get_edit_post_link($this->wpPost, $context);
 
@@ -419,9 +374,6 @@ class Post extends BaseModel
 
     /**
      * Update the post with given attributes.
-     *
-     * @param array $attributes
-     * @return true
      * @throws \WP_Error
      */
     public function update(array $attributes): bool

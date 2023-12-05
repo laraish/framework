@@ -7,22 +7,14 @@ use Illuminate\Support\Collection;
 
 class User extends BaseModel
 {
-    /**
-     * @type integer
-     */
-    protected $id;
+    protected int $id;
 
-    /**
-     * @type \WP_User
-     */
-    protected $wpUser;
+    protected WP_User $wpUser;
 
     /**
      * Author constructor.
-     *
-     * @param null|integer $id
      */
-    public function __construct($id = null)
+    public function __construct(int|null $id = null)
     {
         global $post;
         $queriedObject = get_queried_object();
