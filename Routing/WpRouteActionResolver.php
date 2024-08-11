@@ -50,7 +50,11 @@ class WpRouteActionResolver
     {
         $queriedObject = $this->queriedObject;
 
-        if ((is_home() || is_front_page()) && ($action = $this->getHomeAction())) {
+        if (is_front_page() && ($action = $this->getFrontPageAction())) {
+            return $action;
+        }
+
+        if (is_home() && ($action = $this->getHomeAction())) {
             return $action;
         }
 
@@ -100,12 +104,21 @@ class WpRouteActionResolver
     protected function getHomeAction(): ?array
     {
         $viewData = $this->injectDefaultData
-            ? (is_front_page() && !is_home()
-                ? $this->getDataForPostPage()
-                : $this->getDataForArchivePage())
+            ? array_merge($this->getDataForArchivePage(), ['post' => new Post($this->queriedObject)])
             : [];
 
         if ($action = $this->getGenericPageAction('home', $viewData)) {
+            return $action;
+        }
+
+        return null;
+    }
+
+    protected function getFrontPageAction(): ?array
+    {
+        $viewData = $this->injectDefaultData ? ['post' => new Post($this->queriedObject)] : [];
+
+        if ($action = $this->getGenericPageAction('frontpage', $viewData)) {
             return $action;
         }
 
