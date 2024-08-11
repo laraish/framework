@@ -11,15 +11,10 @@ class Kernel extends ConsoleKernel
     /**
      * @var bool Flag to determine if load wordpress plugins.
      */
-    protected $loadWordpressPlugins = false;
+    protected bool $loadWordpressPlugins = false;
 
     /**
      * Create a new console kernel instance.
-     *
-     * @param  \Illuminate\Contracts\Foundation\Application $app
-     * @param  \Illuminate\Contracts\Events\Dispatcher $events
-     *
-     * @return void
      */
     public function __construct(Application $app, Dispatcher $events)
     {
@@ -36,11 +31,11 @@ class Kernel extends ConsoleKernel
         }
 
         // Prevent from loading plugins (it could be error-prone if load plugins).
-        if ($this->loadWordpressPlugins === false) {
+        if ($this->loadWordpressPlugins === false && !defined('WP_PLUGIN_DIR')) {
             define('WP_PLUGIN_DIR', '/NULL');
         }
 
-        $wp_load = realpath($app->basePath() . '/../../../wp-load.php');
+        $wp_load = getenv('WP_LOAD_PATH') ?: realpath($app->basePath() . '/../../../wp-load.php');
 
         if (file_exists($wp_load)) {
             require_once $wp_load;

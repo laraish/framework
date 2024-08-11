@@ -88,9 +88,9 @@ class Post extends BaseModel
      * @param string $size The thumbnail size.
      * @param string|null $imgPlaceHolder The URL of the placeholder image.
      *
-     * @return object
+     * @return object|null
      */
-    public function thumbnail(string $size = 'full', string|null $imgPlaceHolder = null): object
+    public function thumbnail(string $size = 'full', string|null $imgPlaceHolder = null): ?object
     {
         $thumbnailObject = null;
         $thumbnail = wp_get_attachment_image_src(get_post_thumbnail_id($this->wpPost), $size);
@@ -374,7 +374,7 @@ class Post extends BaseModel
 
     /**
      * Update the post with given attributes.
-     * @throws \WP_Error
+     * @throws \Exception
      */
     public function update(array $attributes): bool
     {
@@ -382,7 +382,8 @@ class Post extends BaseModel
         $result = wp_update_post($attributes, true);
 
         if ($result instanceof \WP_Error) {
-            throw $result;
+          // Convert WP_Error to Exception
+          throw new \Exception($result->get_error_message(), $result->get_error_code());
         }
 
         return true;
@@ -480,14 +481,15 @@ class Post extends BaseModel
      *
      * @param array $attributes
      * @return static
-     * @throws \WP_Error
+     * @throws \Exception
      */
     public static function create(array $attributes): self
     {
         $result = wp_insert_post($attributes, true);
 
         if ($result instanceof \WP_Error) {
-            throw $result;
+          // Convert WP_Error to Exception
+          throw new \Exception($result->get_error_message(), $result->get_error_code());
         }
 
         return new static($result);
