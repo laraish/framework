@@ -1,39 +1,41 @@
 {
-    "name": "laraish/framework",
-    "description": "The Laraish Framework for WordPress.",
-    "keywords": [
-        "framework",
-        "laravel",
-        "wordpress"
-    ],
-    "license": "MIT",
-    "support": {
-        "issues": "https://github.com/laravel/framework/issues",
-        "source": "https://github.com/laravel/framework"
-    },
-    "authors": [
-        {
-            "name": "yaquawa",
-            "email": "yaquawa@gmail.com"
-        }
-    ],
-    "require": {
-        "php": "^8.1",
-        "laravel/framework": "^10.10",
-        "laraish/contracts": "^3.0",
-        "laraish/support": "^3.0",
-        "laraish/pagination": "^3.0",
-        "laraish/options": "^3.0"
-    },
-    "autoload": {
-        "files": [
-            "Foundation/helpers.php"
-        ],
-        "psr-4": {
-            "Laraish\\": "./"
-        }
-    },
-    "scripts": {
-        "fix-cs": ["prettier **/*.php --write"]
+  "name": "laraish/framework",
+  "description": "The Laraish Framework for WordPress.",
+  "keywords": [
+    "framework",
+    "laravel",
+    "wordpress"
+  ],
+  "license": "MIT",
+  "support": {
+    "issues": "https://github.com/laravel/framework/issues",
+    "source": "https://github.com/laravel/framework"
+  },
+  "authors": [
+    {
+      "name": "yaquawa",
+      "email": "yaquawa@gmail.com"
     }
+  ],
+  "require": {
+    "php": "^8.2",
+    "laravel/framework": "^12.0",
+    "laraish/contracts": "^4.0",
+    "laraish/support": "^4.0",
+    "laraish/pagination": "^4.0",
+    "laraish/options": "^4.0"
+  },
+  "autoload": {
+    "files": [
+      "Foundation/helpers.php"
+    ],
+    "psr-4": {
+      "Laraish\\": "./"
+    }
+  },
+  "scripts": {
+    "fix-cs": [
+      "prettier **/*.php --write"
+    ]
+  }
 }
