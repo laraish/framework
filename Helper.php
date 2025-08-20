@@ -24,7 +24,7 @@ class Helper
             return $array;
         }
 
-        $obj = new \stdClass;
+        $obj = new \stdClass();
         foreach ($array as $key => $value) {
             if ($snakeCaseKey) {
                 $key = str_replace('-', '_', Str::snake($key));

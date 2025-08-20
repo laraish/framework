@@ -4,7 +4,6 @@ namespace Laraish\Routing;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Laraish\Foundation\Support\Providers\RouteServiceProvider;
 
 class WpRouteController extends Controller
 {
@@ -13,12 +12,7 @@ class WpRouteController extends Controller
         /** @var WpRouter $wpRouter */
         $wpRouter = app('wpRouter');
 
-        $wpMiddleware = RouteServiceProvider::getWpMiddleware();
-        if (empty($wpMiddleware)) {
-            require $this->wpRoutes();
-        } else {
-            $wpRouter->middleware($wpMiddleware)->group($this->wpRoutes());
-        }
+        require $this->wpRoutes();
 
         $response = $wpRouter->dispatch($request);
 

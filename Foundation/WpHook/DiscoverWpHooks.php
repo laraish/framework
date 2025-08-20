@@ -3,7 +3,6 @@
 namespace Laraish\Foundation\WpHook;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionException;
@@ -32,23 +31,7 @@ class DiscoverWpHooks
             return [];
         }
 
-        $listeners = new Collection(static::getListenerHooks(Finder::create()->files()->in($listenerPath), $basePath));
-
-        $discoveredHooks = [];
-
-        foreach ($listeners as $listener => $hookConfig) {
-            if ($hookConfig) {
-                $discoveredHooks[] = new WpHookConfig(
-                    hookName: $hookConfig->hookName,
-                    hookType: $hookConfig->hookType,
-                    priority: $hookConfig->priority,
-                    argumentsNumber: $hookConfig->argumentsNumber,
-                    handlerClassName: $listener,
-                );
-            }
-        }
-
-        return $discoveredHooks;
+        return static::getListenerHooks(Finder::create()->files()->in($listenerPath), $basePath);
     }
 
     /**
@@ -56,7 +39,7 @@ class DiscoverWpHooks
      *
      * @param iterable<string, SplFileInfo> $listeners
      * @param string $basePath
-     * @return array<class-string, WpHookConfig>
+     * @return array<int, WpHookConfig>
      */
     protected static function getListenerHooks($listeners, $basePath)
     {
@@ -86,18 +69,11 @@ class DiscoverWpHooks
             $hookConfig = static::extractHookFromListener($listenerClass);
 
             if ($hookConfig) {
-                // Set the correct className
-                $listenerHooks[$listenerClass->name] = new WpHookConfig(
-                    hookName: $hookConfig->hookName,
-                    hookType: $hookConfig->hookType,
-                    priority: $hookConfig->priority,
-                    argumentsNumber: $hookConfig->argumentsNumber,
-                    handlerClassName: $listenerClass->name,
-                );
+                $listenerHooks[] = $hookConfig;
             }
         }
 
-        return array_filter($listenerHooks);
+        return $listenerHooks;
     }
 
     /**
@@ -108,23 +84,38 @@ class DiscoverWpHooks
      */
     protected static function extractHookFromListener(ReflectionClass $listener): ?WpHookConfig
     {
-        // Create an instance to access readonly properties
-        // Use reflection to instantiate without constructor
         try {
+            // Get property values using reflection
+            $hookNameProp = $listener->getProperty('hookName');
+            $hookNameProp->setAccessible(true);
+
+            $hookTypeProp = $listener->getProperty('hookType');
+            $hookTypeProp->setAccessible(true);
+
+            // Create instance to read property values
             $instance = $listener->newInstanceWithoutConstructor();
+
+            $hookName = $hookNameProp->getValue($instance);
+            $hookType = $hookTypeProp->getValue($instance);
+
+            $priorityProp = $listener->getProperty('priority');
+            $priorityProp->setAccessible(true);
+            $priority = $priorityProp->getValue($instance);
+
+            $argumentsNumberProp = $listener->getProperty('argumentsNumber');
+            $argumentsNumberProp->setAccessible(true);
+            $argumentsNumber = $argumentsNumberProp->getValue($instance);
+
+            return new WpHookConfig(
+                hookName: $hookName,
+                hookType: $hookType,
+                priority: $priority,
+                argumentsNumber: $argumentsNumber,
+                handlerClassName: $listener->name,
+            );
         } catch (ReflectionException) {
             return null;
         }
-
-        // Since it's a WpHookListener subclass, these properties are guaranteed to exist
-        // Note: className will be set by the caller
-        return new WpHookConfig(
-            hookName: $instance->hookName,
-            hookType: $instance->hookType,
-            priority: $instance->priority ?? 10,
-            argumentsNumber: $instance->argumentsNumber ?? 1,
-            handlerClassName: '', // Will be set by the caller
-        );
     }
 
     /**
