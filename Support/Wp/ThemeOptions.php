@@ -79,7 +79,7 @@ class ThemeOptions
 
                     return $defaults;
                 },
-                5
+                5,
             );
 
             add_action(
@@ -92,7 +92,7 @@ class ThemeOptions
                     }
                 },
                 5,
-                2
+                2,
             );
 
             add_action('admin_head', function () {
@@ -216,7 +216,7 @@ class ThemeOptions
                             return $post_templates;
                         },
                         10,
-                        3
+                        3,
                     );
                 }
             }
@@ -289,7 +289,7 @@ class ThemeOptions
                             $args['src'],
                             $args['dependencies'],
                             $args['version'],
-                            $args['in_footer']
+                            $args['in_footer'],
                         );
                     }
 
@@ -299,7 +299,7 @@ class ThemeOptions
                             $args['src'],
                             $args['dependencies'],
                             $args['version'],
-                            $args['media']
+                            $args['media'],
                         );
                     }
                 }
@@ -377,7 +377,7 @@ class ThemeOptions
                 return $value;
             },
             20,
-            3
+            3,
         );
     }
 
@@ -401,7 +401,7 @@ class ThemeOptions
                 ',',
                 array_filter($styles, function ($style) use ($stylesToBeRemoved) {
                     return !in_array($style, $stylesToBeRemoved);
-                })
+                }),
             );
 
             return true;
@@ -413,7 +413,7 @@ class ThemeOptions
                 wp_dequeue_style('wp-block-library');
                 wp_dequeue_style('wp-block-library-theme');
             },
-            100
+            100,
         );
     }
 }

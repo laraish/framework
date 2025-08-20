@@ -26,7 +26,7 @@ abstract class Widget extends WP_Widget
         parent::__construct(
             $this->baseId, // Base ID
             $this->name, // Name
-            array_merge(['description' => $this->description], $this->widget_options) // widget_options
+            array_merge(['description' => $this->description], $this->widget_options), // widget_options
         );
     }
 

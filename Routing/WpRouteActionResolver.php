@@ -325,7 +325,7 @@ class WpRouteActionResolver
                     ->map(function ($slug) {
                         return ucfirst(Str::camel($slug));
                     })
-                    ->implode('\\')
+                    ->implode('\\'),
             );
 
             if ($this->controllerExists($controller)) {

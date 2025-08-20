@@ -254,7 +254,7 @@ class WpRouter
         string $baseUri,
         $selectorOrAction,
         $actionOrMethods = null,
-        $methods = null
+        $methods = null,
     ): array {
         $selector = $selectorOrAction;
         $action = $actionOrMethods;

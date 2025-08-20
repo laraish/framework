@@ -124,7 +124,7 @@ WHERE EXISTS (
       AND B.object_id = POSTS.ID
     )
   AND POSTS.post_status = 'publish'
-  "
+  ",
         );
 
         return (int) $count;
@@ -283,7 +283,7 @@ WHERE EXISTS (
         if (!($postClassName === Post::class || is_subclass_of($postClassName, Post::class))) {
             $baseClassName = Post::class;
             throw new \InvalidArgumentException(
-                "The post class name must be a subclass of $baseClassName. `$postClassName` given."
+                "The post class name must be a subclass of $baseClassName. `$postClassName` given.",
             );
         }
 

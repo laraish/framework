@@ -382,8 +382,8 @@ class Post extends BaseModel
         $result = wp_update_post($attributes, true);
 
         if ($result instanceof \WP_Error) {
-          // Convert WP_Error to Exception
-          throw new \Exception($result->get_error_message(), $result->get_error_code());
+            // Convert WP_Error to Exception
+            throw new \Exception($result->get_error_message(), $result->get_error_code());
         }
 
         return true;
@@ -488,8 +488,8 @@ class Post extends BaseModel
         $result = wp_insert_post($attributes, true);
 
         if ($result instanceof \WP_Error) {
-          // Convert WP_Error to Exception
-          throw new \Exception($result->get_error_message(), $result->get_error_code());
+            // Convert WP_Error to Exception
+            throw new \Exception($result->get_error_message(), $result->get_error_code());
         }
 
         return new static($result);

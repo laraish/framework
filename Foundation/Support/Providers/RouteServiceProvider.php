@@ -5,34 +5,19 @@ namespace Laraish\Foundation\Support\Providers;
 use Laraish\Routing\WpRouter;
 use Illuminate\Support\Facades\Route;
 use Laraish\Routing\WpRouteController;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
 {
-    protected static $wpMiddleware = [];
-
-    /**
-     * Switch validator for WordPress
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        parent::boot();
-
-        $this->addWpRoutesAsFallback();
-    }
-
     public function register()
     {
-        parent::register();
         $this->registerWpRouter();
+        $this->addWpRoutesAsFallback();
     }
 
     protected function addWpRoutesAsFallback(): void
     {
         $placeholder = 'fallbackPlaceholder';
-
         Route::any("{{$placeholder}}", [WpRouteController::class, 'dispatch'])
             ->where($placeholder, '.*')
             ->fallback();
@@ -48,10 +33,5 @@ class RouteServiceProvider extends ServiceProvider
         $this->app->singleton('wpRouter', function ($app) {
             return new WpRouter($app['events'], $app);
         });
-    }
-
-    public static function getWpMiddleware()
-    {
-        return static::$wpMiddleware;
     }
 }
