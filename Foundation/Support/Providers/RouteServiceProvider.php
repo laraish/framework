@@ -12,6 +12,11 @@ class RouteServiceProvider extends ServiceProvider
     public function register()
     {
         $this->registerWpRouter();
+    }
+
+    public function boot()
+    {
+        // Register WordPress routes as a fallback
         $this->addWpRoutesAsFallback();
     }
 
