@@ -1,0 +1,25 @@
+{
+  "name": "framework",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/laraish/framework#readme",
+  "bugs": {
+    "url": "https://github.com/laraish/framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laraish/framework.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "prettier": "prettier"
+  },
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447",
+  "devDependencies": {
+    "@prettier/plugin-php": "^0.24.0",
+    "prettier": "^3.6.2"
+  }
+}

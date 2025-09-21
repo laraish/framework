@@ -1,5 +1,6 @@
 {
   "singleQuote": true,
-  "phpVersion": "7.2",
-  "printWidth": 120
+  "phpVersion": "8.3",
+  "printWidth": 120,
+  "plugins": ["@prettier/plugin-php"]
 }
