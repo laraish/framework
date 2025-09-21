@@ -25,6 +25,7 @@ class RouteServiceProvider extends ServiceProvider
         $placeholder = 'fallbackPlaceholder';
         Route::any("{{$placeholder}}", [WpRouteController::class, 'dispatch'])
             ->where($placeholder, '.*')
+            ->middleware('web')
             ->fallback();
     }
 
